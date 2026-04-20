@@ -115,6 +115,10 @@
             .hero {
                 padding: 0 5%;
             }
+            .subtitle {
+                white-space: normal;
+                max-width: 90vw;
+            }
         }
     </style>
 </head>
@@ -208,8 +212,11 @@
             ctx.fillRect(0, 0, width, height);
 
             // FOLIATION WAVE LINES
+            const isMobile = width < 640;
             const resolution = 140;
             const centerY = height * 0.5;
+            // On mobile: fit band to ~60% of viewport height so lines don't squish
+            const effectiveSpacing = isMobile ? (height * 0.60) / LINE_COUNT : BASE_SPACING;
 
             // Smooth mouse position — density center never jumps
             smoothMouse.x += (mouse.x - smoothMouse.x) * 0.012;
@@ -229,12 +236,11 @@
                 const xRatio = xStep / resolution;
                 const spacings = Array.from({ length: LINE_COUNT - 1 }, (_, i) => {
                     const t = (i + 0.5) / LINE_COUNT;
-                    // Approximate screen-space y of this gap to measure mouse distance
-                    const approxY = centerY + (t - 0.5) * LINE_COUNT * BASE_SPACING;
+                    const approxY = centerY + (t - 0.5) * LINE_COUNT * effectiveSpacing;
                     const dx = (xRatio - smoothMouse.x / width) * width;
                     const dy = approxY - smoothMouse.y;
                     const mouseInfluence = mouseStrength * Math.exp(-(dx * dx + dy * dy) / (mouseRadius * mouseRadius));
-                    return BASE_SPACING * spreadField(t, xRatio) * Math.max(0.12, 1 - 0.88 * mouseInfluence);
+                    return effectiveSpacing * spreadField(t, xRatio) * Math.max(0.12, 1 - 0.88 * mouseInfluence);
                 });
                 const total = spacings.reduce((a, b) => a + b, 0);
                 let cum = -total / 2;
@@ -254,11 +260,12 @@
                     const xRatio = xStep / resolution;
                     const px = xRatio * width;
 
+                    // Simpler spine on mobile — fewer harmonics, smaller amplitude
                     const spine = centerY
-                        + Math.sin(xRatio * Math.PI * 0.9 + time * 0.28) * (height * 0.26)
-                        + Math.cos(xRatio * Math.PI * 0.6 - time * 0.18) * (height * 0.14)
-                        + Math.sin(xRatio * Math.PI * 1.7 + time * 0.22) * (height * 0.07)
-                        + Math.cos(xRatio * Math.PI * 2.3 - time * 0.30) * (height * 0.04);
+                        + Math.sin(xRatio * Math.PI * 0.9 + time * 0.28) * (height * (isMobile ? 0.18 : 0.26))
+                        + Math.cos(xRatio * Math.PI * 0.6 - time * 0.18) * (height * (isMobile ? 0.08 : 0.14))
+                        + (isMobile ? 0 : Math.sin(xRatio * Math.PI * 1.7 + time * 0.22) * (height * 0.07))
+                        + (isMobile ? 0 : Math.cos(xRatio * Math.PI * 2.3 - time * 0.30) * (height * 0.04));
 
                     const py = spine + offsets2d[i][xStep];
 
