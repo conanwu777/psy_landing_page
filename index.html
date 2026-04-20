@@ -206,9 +206,10 @@
 
             // 3. CURSOR LIGHT — warm yellow glow following the mouse
             const cursorGrad = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, width * 0.55);
-            cursorGrad.addColorStop(0,   'rgba(255, 240, 190, 0.38)');
-            cursorGrad.addColorStop(0.4, 'rgba(250, 225, 160, 0.14)');
-            cursorGrad.addColorStop(1,   'rgba(245, 215, 140, 0.0)');
+            cursorGrad.addColorStop(0,    'rgba(255, 255, 252, 0.38)');
+            cursorGrad.addColorStop(0.06, 'rgba(255, 248, 220, 0.30)');
+            cursorGrad.addColorStop(0.45, 'rgba(250, 225, 160, 0.14)');
+            cursorGrad.addColorStop(1,    'rgba(245, 215, 140, 0.0)');
             ctx.fillStyle = cursorGrad;
             ctx.fillRect(0, 0, width, height);
 
