@@ -161,7 +161,7 @@
         const canvas = document.getElementById('foliationCanvas');
         const ctx = canvas.getContext('2d');
         let animationFrameId;
-        let time = 0;
+        let time = Math.random() * 1000;
 
         let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
         let smoothMouse = { x: mouse.x, y: mouse.y };
