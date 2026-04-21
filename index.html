@@ -216,29 +216,34 @@
             haloMouse.x += (mouse.x - haloMouse.x) * 0.06;
             haloMouse.y += (mouse.y - haloMouse.y) * 0.06;
 
-            // Outer bloom: large lavender
+            // Cursor halo — screen blend ensures only lightening, never darkening
+            ctx.globalCompositeOperation = 'screen';
+
+            // Outer bloom: large soft warm white
             const bloomGrad = ctx.createRadialGradient(haloMouse.x, haloMouse.y, 0, haloMouse.x, haloMouse.y, width * 0.55);
-            bloomGrad.addColorStop(0,   'rgba(240, 225, 255, 0.22)');
-            bloomGrad.addColorStop(0.5, 'rgba(240, 225, 255, 0.08)');
-            bloomGrad.addColorStop(1,   'rgba(240, 225, 255, 0.0)');
+            bloomGrad.addColorStop(0,   'rgba(255, 245, 235, 0.18)');
+            bloomGrad.addColorStop(0.5, 'rgba(255, 240, 225, 0.06)');
+            bloomGrad.addColorStop(1,   'rgba(255, 235, 215, 0.0)');
             ctx.fillStyle = bloomGrad;
             ctx.fillRect(0, 0, width, height);
 
-            // Mid layer: yellow/orange
+            // Mid layer: warm yellow/peach tint
             const midGrad = ctx.createRadialGradient(haloMouse.x, haloMouse.y, 0, haloMouse.x, haloMouse.y, width * 0.18);
-            midGrad.addColorStop(0,   'rgba(255, 220, 160, 0.36)');
-            midGrad.addColorStop(0.5, 'rgba(255, 200, 100, 0.16)');
-            midGrad.addColorStop(1,   'rgba(255, 190, 80,  0.0)');
+            midGrad.addColorStop(0,   'rgba(255, 210, 140, 0.28)');
+            midGrad.addColorStop(0.5, 'rgba(255, 200, 120, 0.10)');
+            midGrad.addColorStop(1,   'rgba(255, 190, 100, 0.0)');
             ctx.fillStyle = midGrad;
             ctx.fillRect(0, 0, width, height);
 
-            // Core: bright white
+            // Core: bright warm white
             const coreGrad = ctx.createRadialGradient(haloMouse.x, haloMouse.y, 0, haloMouse.x, haloMouse.y, width * 0.04);
-            coreGrad.addColorStop(0,   'rgba(255, 255, 255, 0.4)');
-            coreGrad.addColorStop(0.4, 'rgba(253, 250, 240, 0.2)');
-            coreGrad.addColorStop(1,   'rgba(255, 240, 220, 0.0)');
+            coreGrad.addColorStop(0,   'rgba(255, 252, 245, 0.50)');
+            coreGrad.addColorStop(0.4, 'rgba(255, 248, 235, 0.20)');
+            coreGrad.addColorStop(1,   'rgba(255, 245, 220, 0.0)');
             ctx.fillStyle = coreGrad;
             ctx.fillRect(0, 0, width, height);
+
+            ctx.globalCompositeOperation = 'source-over';
 
             // FOLIATION WAVE LINES
             const isMobile = width < 640;
