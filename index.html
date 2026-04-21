@@ -209,7 +209,8 @@
             const gradY2 = height * (0.58 + Math.sin(time * 0.33) * 0.22);
 
             // Base layer: warm sand → muted clay → cool greige
-            const gradient1 = ctx.createRadialGradient(gradX1, gradY1, 0, gradX1, gradY1, width * 1.15);
+            const gradRadius = Math.hypot(width, height);
+            const gradient1 = ctx.createRadialGradient(gradX1, gradY1, 0, gradX1, gradY1, gradRadius);
             gradient1.addColorStop(0,   '#ead0bc');
             gradient1.addColorStop(0.35,'#d1b0a4');
             gradient1.addColorStop(0.7, '#c0a89a');
