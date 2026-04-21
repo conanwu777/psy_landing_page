@@ -12,9 +12,9 @@
     
     <style>
         :root {
-            --text-color: #3a3633;
-            --subtitle-color: #72605a;
-            --base-bg: #bc9791;
+            --text-color: #2b2623;
+            --subtitle-color: #6f6660;
+            --base-bg: #c9a79f;
         }
 
         * {
@@ -33,18 +33,6 @@
             cursor: none;
         }
 
-        #custom-cursor {
-            position: fixed;
-            pointer-events: none;
-            z-index: 100;
-            font-family: 'Courier Prime', monospace;
-            font-weight: 700;
-            font-size: 1.4rem;
-            color: var(--text-color);
-            transform: translate(0, -0.15em);
-            animation: blink 1s steps(2) infinite;
-            user-select: none;
-        }
 
         .container {
             position: relative;
@@ -142,8 +130,7 @@
 </head>
 <body>
 
-    <div id="custom-cursor">_</div>
-    <div class="container">
+<div class="container">
         <canvas id="foliationCanvas"></canvas>
         <div class="grain-overlay"></div>
 
@@ -165,19 +152,18 @@
 
         let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
         let smoothMouse = { x: mouse.x, y: mouse.y };
+        let haloMouse = { x: mouse.x, y: mouse.y };
         let prevMouse = { x: mouse.x, y: mouse.y };
         let mouseStrength = 0;
 
-        const cursorEl = document.getElementById('custom-cursor');
         window.addEventListener('mousemove', e => {
             mouse.x = e.clientX;
             mouse.y = e.clientY;
-            cursorEl.style.left = e.clientX + 'px';
-            cursorEl.style.top  = e.clientY + 'px';
         });
 
         const LINE_COUNT = 50;
         const BASE_SPACING = 17;
+
 
         // Smooth 2D spread field — t: position across band (0–1), x: position along curve (0–1)
         // Higher value = adjacent lines diverge (spread apart) at that location
@@ -211,10 +197,10 @@
             // Base layer: warm sand → muted clay → cool greige
             const gradRadius = Math.hypot(width, height);
             const gradient1 = ctx.createRadialGradient(gradX1, gradY1, 0, gradX1, gradY1, gradRadius);
-            gradient1.addColorStop(0,   '#ead0bc');
-            gradient1.addColorStop(0.35,'#d1b0a4');
-            gradient1.addColorStop(0.7, '#c0a89a');
-            gradient1.addColorStop(1,   '#ae9488');
+            gradient1.addColorStop(0,   '#c9a79f');
+            gradient1.addColorStop(0.35,'#b09080');
+            gradient1.addColorStop(0.7, '#947060');
+            gradient1.addColorStop(1,   '#7a5c50');
             ctx.fillStyle = gradient1;
             ctx.fillRect(0, 0, width, height);
 
@@ -226,13 +212,32 @@
             ctx.fillStyle = gradient2;
             ctx.fillRect(0, 0, width, height);
 
-            // 3. CURSOR LIGHT — warm yellow glow following the mouse
-            const cursorGrad = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, width * 0.55);
-            cursorGrad.addColorStop(0,    'rgba(255, 255, 252, 0.38)');
-            cursorGrad.addColorStop(0.06, 'rgba(255, 248, 220, 0.30)');
-            cursorGrad.addColorStop(0.45, 'rgba(250, 225, 160, 0.14)');
-            cursorGrad.addColorStop(1,    'rgba(245, 215, 140, 0.0)');
-            ctx.fillStyle = cursorGrad;
+            // 3. CURSOR LIGHT — three-layer halo, lazily chasing cursor
+            haloMouse.x += (mouse.x - haloMouse.x) * 0.06;
+            haloMouse.y += (mouse.y - haloMouse.y) * 0.06;
+
+            // Outer bloom: large lavender
+            const bloomGrad = ctx.createRadialGradient(haloMouse.x, haloMouse.y, 0, haloMouse.x, haloMouse.y, width * 0.55);
+            bloomGrad.addColorStop(0,   'rgba(240, 225, 255, 0.22)');
+            bloomGrad.addColorStop(0.5, 'rgba(240, 225, 255, 0.08)');
+            bloomGrad.addColorStop(1,   'rgba(240, 225, 255, 0.0)');
+            ctx.fillStyle = bloomGrad;
+            ctx.fillRect(0, 0, width, height);
+
+            // Mid layer: yellow/orange
+            const midGrad = ctx.createRadialGradient(haloMouse.x, haloMouse.y, 0, haloMouse.x, haloMouse.y, width * 0.18);
+            midGrad.addColorStop(0,   'rgba(255, 220, 160, 0.36)');
+            midGrad.addColorStop(0.5, 'rgba(255, 200, 100, 0.16)');
+            midGrad.addColorStop(1,   'rgba(255, 190, 80,  0.0)');
+            ctx.fillStyle = midGrad;
+            ctx.fillRect(0, 0, width, height);
+
+            // Core: bright white
+            const coreGrad = ctx.createRadialGradient(haloMouse.x, haloMouse.y, 0, haloMouse.x, haloMouse.y, width * 0.04);
+            coreGrad.addColorStop(0,   'rgba(255, 255, 255, 0.4)');
+            coreGrad.addColorStop(0.4, 'rgba(253, 250, 240, 0.2)');
+            coreGrad.addColorStop(1,   'rgba(255, 240, 220, 0.0)');
+            ctx.fillStyle = coreGrad;
             ctx.fillRect(0, 0, width, height);
 
             // FOLIATION WAVE LINES
