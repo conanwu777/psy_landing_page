@@ -314,6 +314,83 @@
 
         // Start animation
         draw();
+
+        // HANDPAN AMBIENT SYNTHESIS
+        let audioCtx = null;
+
+        function createReverb(ctx) {
+            const convolver = ctx.createConvolver();
+            const length = ctx.sampleRate * 4;
+            const buffer = ctx.createBuffer(2, length, ctx.sampleRate);
+            for (let c = 0; c < 2; c++) {
+                const data = buffer.getChannelData(c);
+                for (let i = 0; i < length; i++) {
+                    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 1.8);
+                }
+            }
+            convolver.buffer = buffer;
+            return convolver;
+        }
+
+        // D Kurd minor — meditative handpan scale
+        const SCALE = [146.83, 220.00, 233.08, 261.63, 293.66, 329.63, 349.23, 392.00, 440.00];
+
+        function playNote(ctx, dest, freq, time) {
+            const env = ctx.createGain();
+            env.connect(dest);
+            const vel = 0.18 + Math.random() * 0.18;
+            env.gain.setValueAtTime(0, time);
+            env.gain.linearRampToValueAtTime(vel, time + 0.012);
+            env.gain.exponentialRampToValueAtTime(0.0001, time + 5.0);
+
+            // Fundamental + slightly inharmonic overtones for metallic quality
+            [[1, 1.0], [2, 0.28], [3.02, 0.14], [4.1, 0.07]].forEach(([ratio, amp]) => {
+                const osc = ctx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.value = freq * ratio;
+                const g = ctx.createGain();
+                g.gain.value = amp;
+                osc.connect(g);
+                g.connect(env);
+                osc.start(time);
+                osc.stop(time + 5.5);
+            });
+
+            // Soft noise transient for the strike
+            const bufSize = ctx.sampleRate * 0.04;
+            const noiseBuf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+            const nd = noiseBuf.getChannelData(0);
+            for (let i = 0; i < bufSize; i++) nd[i] = (Math.random() * 2 - 1);
+            const noise = ctx.createBufferSource();
+            noise.buffer = noiseBuf;
+            const noiseEnv = ctx.createGain();
+            noiseEnv.gain.setValueAtTime(0.06, time);
+            noiseEnv.gain.exponentialRampToValueAtTime(0.0001, time + 0.04);
+            noise.connect(noiseEnv);
+            noiseEnv.connect(env);
+            noise.start(time);
+        }
+
+        function scheduleNext(ctx, dest) {
+            const freq = SCALE[Math.floor(Math.random() * SCALE.length)];
+            playNote(ctx, dest, freq, ctx.currentTime);
+            const gap = 2200 + Math.random() * 4800;
+            setTimeout(() => scheduleNext(ctx, dest), gap);
+        }
+
+        function initAudio() {
+            if (audioCtx) return;
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const reverb = createReverb(audioCtx);
+            const master = audioCtx.createGain();
+            master.gain.value = 0.55;
+            reverb.connect(master);
+            master.connect(audioCtx.destination);
+            scheduleNext(audioCtx, reverb);
+        }
+
+        document.addEventListener('click',      initAudio, { once: true });
+        document.addEventListener('touchstart', initAudio, { once: true });
     </script>
 </body>
 </html>
