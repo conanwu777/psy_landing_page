@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
-    
+
     <style>
         :root {
             --text-color: #403833;
@@ -33,14 +33,12 @@
             cursor: none;
         }
 
-
         .container {
             position: relative;
             width: 100%;
             height: 100vh;
         }
 
-        /* Canvas should fill the screen */
         #foliationCanvas {
             position: absolute;
             top: 0;
@@ -50,7 +48,6 @@
             display: block;
         }
 
-        /* Texture overlay for the "Classic" paper feel */
         .grain-overlay {
             position: absolute;
             inset: 0;
@@ -62,7 +59,6 @@
             z-index: 5;
         }
 
-        /* Content Layer */
         .hero {
             position: relative;
             z-index: 10;
@@ -91,6 +87,7 @@
             letter-spacing: -0.05em;
             line-height: 0.9;
             margin: 0;
+            transition: font-size 0.5s ease;
         }
 
         .cursor {
@@ -106,35 +103,152 @@
             font-weight: 400;
         }
 
+        .conversation {
+            position: fixed;
+            top: 1.5rem;
+            left: calc(100% * 2 / 3 - 1.2rem);
+            right: 1.2rem;
+            bottom: 6.6rem;
+            z-index: 15;
+            overflow-y: auto;
+            display: none;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 0 0.8rem 0.4rem;
+            scrollbar-width: none;
+            border-radius: 8px;
+            background: linear-gradient(to bottom, transparent 0%, rgba(255, 255, 255, 0.22) 100%);
+        }
+
+        .conversation::-webkit-scrollbar { display: none; }
+
+        .conversation p {
+            font-family: 'Courier Prime', monospace;
+            font-size: 15px;
+            color: rgba(64, 56, 51, 0.65);
+            line-height: 1.6;
+            margin-top: 1.2rem;
+            white-space: pre-wrap;
+        }
+
+        .conversation p.user {
+            text-align: right;
+            font-weight: 700;
+        }
+
+        .conversation p.thinking {
+            opacity: 0.35;
+            font-style: italic;
+        }
+
+        .tw-cursor {
+            animation: blink 1s steps(2) infinite;
+        }
+
+        @keyframes tw-blink {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0; }
+        }
+
         @keyframes blink {
             0% { opacity: 0; }
             100% { opacity: 1; }
         }
 
-        @media (max-width: 640px) {
+        .ask-bar {
+            position: fixed;
+            bottom: 2.4rem;
+            left: calc(100% * 2 / 3 - 1.2rem);
+            right: 1.2rem;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            background: rgba(243, 226, 220, 0.55);
+            border: 1px solid rgba(142, 134, 126, 0.22);
+            border-radius: 999px;
+            padding: 0.6rem 1rem 0.6rem 1.4rem;
+            gap: 0.6rem;
+        }
+
+        .ask-bar input {
+            flex: 1;
+            background: none;
+            border: none;
+            outline: none;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.95rem;
+            color: var(--text-color);
+            caret-color: var(--text-color);
+        }
+
+        .ask-bar input::placeholder {
+            color: rgba(43, 38, 35, 0.30);
+        }
+
+        .ask-bar input:disabled {
+            opacity: 0.5;
+        }
+
+        .ask-bar .enter-icon {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(43, 38, 35, 0.35);
+            font-size: 1.4rem;
+            pointer-events: none;
+        }
+
+        @media (max-aspect-ratio: 1/1) {
             .hero {
                 padding: 0 5%;
+                justify-content: flex-start;
+            }
+            .hero-spacer {
+                flex: 0 0 auto;
+                height: 42vh;
+                transition: height 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .hero.compressed .hero-spacer {
+                height: 5vh;
             }
             .hero-top {
-                flex: 0 0 38%;
+                flex: 0 0 auto;
+                align-items: flex-start;
             }
             .hero-bottom {
-                flex: 0 0 62%;
+                flex: 0 0 auto;
             }
             .subtitle {
                 white-space: normal;
                 max-width: 90vw;
+            }
+            .ask-bar {
+                left: 2.5%;
+                right: 2.5%;
+            }
+            .conversation {
+                left: 2.5%;
+                right: 2.5%;
             }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
+    <div class="conversation" id="conversation"></div>
+
+    <div class="ask-bar">
+        <input type="text" id="askInput" placeholder="What's Psy?" />
+        <span class="enter-icon">↵</span>
+    </div>
+
+    <div class="container">
         <canvas id="foliationCanvas"></canvas>
         <div class="grain-overlay"></div>
 
-        <main class="hero">
+        <main class="hero" id="hero">
+            <div class="hero-spacer"></div>
             <div class="hero-top">
                 <h1 class="title">Psy<span class="cursor">_</span></h1>
             </div>
@@ -145,9 +259,12 @@
     </div>
 
     <script>
+        // ── Config ──────────────────────────────────────────────
+        const API_URL = 'https://api.whatspsy.com/chat';
+
+        // ── Canvas / animation ───────────────────────────────────
         const canvas = document.getElementById('foliationCanvas');
         const ctx = canvas.getContext('2d');
-        let animationFrameId;
         let time = Math.random() * 1000;
 
         let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
@@ -156,23 +273,16 @@
         let prevMouse = { x: mouse.x, y: mouse.y };
         let mouseStrength = 0;
 
-        window.addEventListener('mousemove', e => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
-        });
+        window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
         const LINE_COUNT = 50;
         const BASE_SPACING = 17;
 
-
-        // Smooth 2D spread field — t: position across band (0–1), x: position along curve (0–1)
-        // Higher value = adjacent lines diverge (spread apart) at that location
         const spreadField = (t, x) => {
             const s = Math.sin(t * Math.PI * 2.8 + x * Math.PI * 2.1 + time * 0.22)
                     * Math.cos(x * Math.PI * 1.5 - t * Math.PI * 1.3 - time * 0.17);
             return Math.max(0.25, 1.0 + 0.75 * s);
         };
-
 
         function resize() {
             const dpr = window.devicePixelRatio || 1;
@@ -180,7 +290,6 @@
             canvas.height = window.innerHeight * dpr;
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         }
-
         window.addEventListener('resize', resize);
         resize();
 
@@ -188,13 +297,11 @@
             const width = window.innerWidth;
             const height = window.innerHeight;
 
-            // 1. DYNAMIC GRADIENT BACKGROUND — two offset centers moving independently
             const gradX1 = width  * (0.45 + Math.sin(time * 0.38) * 0.30);
             const gradY1 = height * (0.42 + Math.cos(time * 0.28) * 0.26);
             const gradX2 = width  * (0.55 + Math.cos(time * 0.22) * 0.32);
             const gradY2 = height * (0.58 + Math.sin(time * 0.33) * 0.22);
 
-            // Base layer: warm sand → muted clay → cool greige
             const gradRadius = Math.hypot(width, height);
             const gradient1 = ctx.createRadialGradient(gradX1, gradY1, 0, gradX1, gradY1, gradRadius);
             gradient1.addColorStop(0,   '#c9a79f');
@@ -204,22 +311,26 @@
             ctx.fillStyle = gradient1;
             ctx.fillRect(0, 0, width, height);
 
-            // Second layer: drifting ochre/amber accent, blended on top
             const gradient2 = ctx.createRadialGradient(gradX2, gradY2, 0, gradX2, gradY2, width * 0.85);
-            gradient2.addColorStop(0,   'rgba(210, 175, 140, 0.45)'); // warm ochre
-            gradient2.addColorStop(0.45,'rgba(190, 158, 148, 0.28)'); // dusty rose
-            gradient2.addColorStop(1,   'rgba(155, 140, 135, 0.0)');  // fade out
+            gradient2.addColorStop(0,   'rgba(210, 175, 140, 0.45)');
+            gradient2.addColorStop(0.45,'rgba(190, 158, 148, 0.28)');
+            gradient2.addColorStop(1,   'rgba(155, 140, 135, 0.0)');
             ctx.fillStyle = gradient2;
             ctx.fillRect(0, 0, width, height);
 
-            // 3. CURSOR LIGHT — three-layer halo, lazily chasing cursor
+            const gradX3 = width  * (0.5 + Math.sin(time * 0.13 + 2.1) * 0.42);
+            const gradY3 = height * (0.5 + Math.cos(time * 0.09 + 0.7) * 0.38);
+            const gradient3 = ctx.createRadialGradient(gradX3, gradY3, 0, gradX3, gradY3, Math.hypot(width, height) * 0.65);
+            gradient3.addColorStop(0,   'rgba(55, 35, 70, 0.28)');
+            gradient3.addColorStop(0.4, 'rgba(60, 38, 72, 0.14)');
+            gradient3.addColorStop(1,   'rgba(65, 40, 75, 0.0)');
+            ctx.fillStyle = gradient3;
+            ctx.fillRect(0, 0, width, height);
+
             haloMouse.x += (mouse.x - haloMouse.x) * 0.06;
             haloMouse.y += (mouse.y - haloMouse.y) * 0.06;
-
-            // Cursor halo — screen blend ensures only lightening, never darkening
             ctx.globalCompositeOperation = 'screen';
 
-            // Outer bloom: large soft warm white
             const bloomGrad = ctx.createRadialGradient(haloMouse.x, haloMouse.y, 0, haloMouse.x, haloMouse.y, width * 0.55);
             bloomGrad.addColorStop(0,   'rgba(255, 245, 235, 0.18)');
             bloomGrad.addColorStop(0.5, 'rgba(255, 240, 225, 0.06)');
@@ -227,7 +338,6 @@
             ctx.fillStyle = bloomGrad;
             ctx.fillRect(0, 0, width, height);
 
-            // Mid layer: warm yellow/peach tint
             const midGrad = ctx.createRadialGradient(haloMouse.x, haloMouse.y, 0, haloMouse.x, haloMouse.y, width * 0.18);
             midGrad.addColorStop(0,   'rgba(255, 210, 140, 0.28)');
             midGrad.addColorStop(0.5, 'rgba(255, 200, 120, 0.10)');
@@ -235,7 +345,6 @@
             ctx.fillStyle = midGrad;
             ctx.fillRect(0, 0, width, height);
 
-            // Core: bright warm white
             const coreGrad = ctx.createRadialGradient(haloMouse.x, haloMouse.y, 0, haloMouse.x, haloMouse.y, width * 0.04);
             coreGrad.addColorStop(0,   'rgba(255, 252, 245, 0.50)');
             coreGrad.addColorStop(0.4, 'rgba(255, 248, 235, 0.20)');
@@ -245,25 +354,20 @@
 
             ctx.globalCompositeOperation = 'source-over';
 
-            // FOLIATION WAVE LINES
             const isMobile = width < 640;
             const resolution = 140;
             const centerY = height * 0.5;
-            // On mobile: fit band to ~60% of viewport height so lines don't squish
             const effectiveSpacing = isMobile ? (height * 0.60) / LINE_COUNT : BASE_SPACING;
 
-            // Smooth mouse position — density center never jumps
             smoothMouse.x += (mouse.x - smoothMouse.x) * 0.012;
             smoothMouse.y += (mouse.y - smoothMouse.y) * 0.012;
 
-            // mouseStrength — slow in both directions, no snapping
             const mouseDist = Math.hypot(mouse.x - prevMouse.x, mouse.y - prevMouse.y);
             const strengthTarget = mouseDist > 2 ? 0 : 1;
             mouseStrength += (strengthTarget - mouseStrength) * 0.0036;
             prevMouse.x = mouse.x;
             prevMouse.y = mouse.y;
 
-            // Build per-frame 2D offset table: offsets[line][xStep]
             const mouseRadius = width * 0.32;
             const offsets2d = Array.from({ length: LINE_COUNT }, () => new Float32Array(resolution + 1));
             for (let xStep = 0; xStep <= resolution; xStep++) {
@@ -289,33 +393,26 @@
                 ctx.strokeStyle = `rgba(255, 255, 255, 0.22)`;
                 ctx.lineWidth = 1.0;
                 ctx.beginPath();
-
                 for (let xStep = 0; xStep <= resolution; xStep++) {
                     const xRatio = xStep / resolution;
                     const px = xRatio * width;
-
-                    // Simpler spine on mobile — fewer harmonics, smaller amplitude
                     const spine = centerY
                         + Math.sin(xRatio * Math.PI * 0.9 + time * 0.28) * (height * (isMobile ? 0.18 : 0.26))
                         + Math.cos(xRatio * Math.PI * 0.6 - time * 0.18) * (height * (isMobile ? 0.08 : 0.14))
                         + (isMobile ? 0 : Math.sin(xRatio * Math.PI * 1.7 + time * 0.22) * (height * 0.07))
                         + (isMobile ? 0 : Math.cos(xRatio * Math.PI * 2.3 - time * 0.30) * (height * 0.04));
-
                     const py = spine + offsets2d[i][xStep];
-
                     xStep === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
                 }
                 ctx.stroke();
             }
 
             time += 0.005;
-            animationFrameId = requestAnimationFrame(draw);
+            requestAnimationFrame(draw);
         }
-
-        // Start animation
         draw();
 
-        // HANDPAN AMBIENT SYNTHESIS
+        // ── Audio ────────────────────────────────────────────────
         let audioCtx = null;
 
         function createReverb(ctx) {
@@ -324,15 +421,13 @@
             const buffer = ctx.createBuffer(2, length, ctx.sampleRate);
             for (let c = 0; c < 2; c++) {
                 const data = buffer.getChannelData(c);
-                for (let i = 0; i < length; i++) {
+                for (let i = 0; i < length; i++)
                     data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 1.8);
-                }
             }
             convolver.buffer = buffer;
             return convolver;
         }
 
-        // D Kurd minor — meditative handpan scale
         const SCALE = [146.83, 220.00, 233.08, 261.63, 293.66, 329.63, 349.23, 392.00, 440.00];
 
         function playNote(ctx, dest, freq, time) {
@@ -342,8 +437,6 @@
             env.gain.setValueAtTime(0, time);
             env.gain.linearRampToValueAtTime(vel, time + 0.012);
             env.gain.exponentialRampToValueAtTime(0.0001, time + 5.0);
-
-            // Fundamental + slightly inharmonic overtones for metallic quality
             [[1, 1.0], [2, 0.28], [3.02, 0.14], [4.1, 0.07]].forEach(([ratio, amp]) => {
                 const osc = ctx.createOscillator();
                 osc.type = 'sine';
@@ -355,8 +448,6 @@
                 osc.start(time);
                 osc.stop(time + 5.5);
             });
-
-            // Soft noise transient for the strike
             const bufSize = ctx.sampleRate * 0.04;
             const noiseBuf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
             const nd = noiseBuf.getChannelData(0);
@@ -374,8 +465,7 @@
         function scheduleNext(ctx, dest) {
             const freq = SCALE[Math.floor(Math.random() * SCALE.length)];
             playNote(ctx, dest, freq, ctx.currentTime);
-            const gap = 2200 + Math.random() * 4800;
-            setTimeout(() => scheduleNext(ctx, dest), gap);
+            setTimeout(() => scheduleNext(ctx, dest), 2200 + Math.random() * 4800);
         }
 
         function initAudio() {
@@ -391,6 +481,214 @@
 
         document.addEventListener('click',      initAudio, { once: true });
         document.addEventListener('touchstart', initAudio, { once: true });
+
+        // ── Conversation ─────────────────────────────────────────
+        const askInput = document.getElementById('askInput');
+        const convoEl  = document.getElementById('conversation');
+        const heroEl   = document.getElementById('hero');
+
+        let sessionId = '';
+        let streaming  = false;
+
+        // ── Typewriter ───────────────────────────────────────────
+        let twQueue  = [];
+        let twEl     = null;
+        let twCursor = null;
+        let twActive = false;
+
+        function twEnqueue(text) {
+            for (const ch of text) twQueue.push(ch);
+        }
+
+        function twDelay(ch) {
+            let d = 10 + Math.random() * 20;
+            if ('.!?'.includes(ch))       d += 55 + Math.random() * 65;
+            else if (',;:'.includes(ch))  d += 22 + Math.random() * 28;
+            else if (ch === ' ' && Math.random() < 0.07) d += 18 + Math.random() * 22;
+            return d;
+        }
+
+        function twTick() {
+            if (!twActive) return;
+            if (twQueue.length === 0) {
+                if (!streaming) { twStop(); return; }
+                setTimeout(twTick, 20);
+                return;
+            }
+            const ch = twQueue.shift();
+            twEl.textContent += ch;
+            convoEl.scrollTop = convoEl.scrollHeight;
+            setTimeout(twTick, twDelay(ch));
+        }
+
+        function twStart(textEl, container) {
+            twEl = textEl;
+            twActive = true;
+            twCursor = document.createElement('span');
+            twCursor.className = 'tw-cursor';
+            twCursor.textContent = '_';
+            container.appendChild(twCursor);
+            twTick();
+        }
+
+        function twStop() {
+            twActive = false;
+            if (twEl && twQueue.length) {
+                twEl.textContent += twQueue.join('');
+                twQueue = [];
+                convoEl.scrollTop = convoEl.scrollHeight;
+            }
+            twCursor = null;
+            twEl = null;
+        }
+
+        function addMessage(text, role) {
+            const p = document.createElement('p');
+            p.textContent = text;
+            if (role === 'user') p.classList.add('user');
+            convoEl.appendChild(p);
+            convoEl.scrollTop = convoEl.scrollHeight;
+            return p;
+        }
+
+        function isMobileLayout() {
+            return window.innerWidth <= window.innerHeight;
+        }
+
+        function updateConversationTop() {
+            if (isMobileLayout() && heroEl.classList.contains('compressed')) {
+                const ref = heroEl.querySelector('.hero-bottom') || heroEl.querySelector('.hero-top');
+                const subBottom = ref.getBoundingClientRect().bottom - convoEl.getBoundingClientRect().top;
+                const fadeStart = subBottom + 20;
+                const fadeEnd = fadeStart + 120;
+                const mask = `linear-gradient(to bottom, transparent ${fadeStart}px, black ${fadeEnd}px)`;
+                convoEl.style.maskImage = mask;
+                convoEl.style.webkitMaskImage = mask;
+            } else {
+                const mask = 'linear-gradient(to bottom, transparent 0px, black 80px)';
+                convoEl.style.maskImage = mask;
+                convoEl.style.webkitMaskImage = mask;
+            }
+        }
+        window.addEventListener('resize', updateConversationTop);
+
+        // ── Subtitle fit ─────────────────────────────────────────
+        const subtitleEl = document.querySelector('.subtitle');
+        function fitSubtitle() {
+            if (window.innerWidth <= window.innerHeight) {
+                subtitleEl.style.fontSize = '';
+                return;
+            }
+            subtitleEl.style.fontSize = '';
+            const gap = 32; // 2rem margin between subtitle and ask-bar
+            const barLeft = window.innerWidth * (2 / 3) - 1.2 * 16;
+            const available = barLeft - subtitleEl.getBoundingClientRect().left - gap;
+            let size = parseFloat(window.getComputedStyle(subtitleEl).fontSize);
+            subtitleEl.style.fontSize = size + 'px';
+            while (subtitleEl.scrollWidth > available && size > 12) {
+                size -= 0.5;
+                subtitleEl.style.fontSize = size + 'px';
+            }
+        }
+        window.addEventListener('resize', fitSubtitle);
+        document.fonts.ready.then(fitSubtitle);
+
+        function expandUI() {
+            if (!heroEl.classList.contains('compressed')) {
+                heroEl.classList.add('compressed');
+                convoEl.style.display = 'flex';
+                updateConversationTop();
+                setTimeout(updateConversationTop, 520);
+            } else {
+                updateConversationTop();
+            }
+        }
+
+        async function streamResponse(userText) {
+            streaming = true;
+            askInput.disabled = true;
+
+            const replyEl = document.createElement('p');
+            replyEl.classList.add('thinking');
+            replyEl.textContent = '...';
+            convoEl.appendChild(replyEl);
+            convoEl.scrollTop = convoEl.scrollHeight;
+            let textSpan = null;
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: userText, session_id: sessionId }),
+                });
+
+                if (!res.ok) throw new Error(`Server error ${res.status}`);
+
+                const reader = res.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                let firstToken = true;
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    buffer += decoder.decode(value, { stream: true });
+
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+
+                    for (const line of lines) {
+                        if (!line.startsWith('data: ')) continue;
+                        const data = line.slice(6);
+
+                        if (data === '[DONE]') break;
+
+                        // First event carries session_id JSON
+                        if (data.startsWith('{')) {
+                            try {
+                                const json = JSON.parse(data);
+                                if (json.session_id) {
+                                    sessionId = json.session_id;
+                                }
+                            } catch {}
+                            continue;
+                        }
+
+                        if (firstToken) {
+                            replyEl.classList.remove('thinking');
+                            replyEl.textContent = '';
+                            textSpan = document.createElement('span');
+                            replyEl.appendChild(textSpan);
+                            twStart(textSpan, replyEl);
+                            firstToken = false;
+                        }
+
+                        twEnqueue(data.replace(/\\n/g, '\n'));
+                    }
+                }
+            } catch (err) {
+                twStop();
+                replyEl.classList.remove('thinking');
+                replyEl.textContent = '[connection error — is the Identity server running?]';
+                replyEl.style.opacity = '0.4';
+                console.error(err);
+            } finally {
+                streaming = false;
+                askInput.disabled = false;
+                askInput.focus();
+            }
+        }
+
+        askInput.addEventListener('keydown', e => {
+            if (e.key !== 'Enter') return;
+            const text = askInput.value.trim();
+            if (!text || streaming) return;
+            askInput.value = '';
+
+            expandUI();
+            addMessage(text, 'user');
+            streamResponse(text);
+        });
     </script>
 </body>
 </html>
