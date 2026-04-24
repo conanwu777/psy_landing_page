@@ -229,11 +229,17 @@
                 bottom: 1.2rem;
                 box-sizing: border-box;
             }
+            .ask-bar input {
+                font-size: 14px;
+            }
             .conversation {
                 left: 1rem;
                 right: 1rem;
                 bottom: 5.4rem;
                 box-sizing: border-box;
+            }
+            .conversation p {
+                font-size: 13px;
             }
         }
     </style>
@@ -563,8 +569,8 @@
             if (isMobileLayout() && heroEl.classList.contains('compressed')) {
                 const ref = heroEl.querySelector('.hero-bottom') || heroEl.querySelector('.hero-top');
                 const subBottom = ref.getBoundingClientRect().bottom - convoEl.getBoundingClientRect().top;
-                const fadeStart = subBottom + 20;
-                const fadeEnd = fadeStart + 120;
+                const fadeEnd = subBottom + 8;
+                const fadeStart = fadeEnd - 80;
                 const mask = `linear-gradient(to bottom, transparent ${fadeStart}px, black ${fadeEnd}px)`;
                 convoEl.style.maskImage = mask;
                 convoEl.style.webkitMaskImage = mask;
