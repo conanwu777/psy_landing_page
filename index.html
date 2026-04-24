@@ -572,9 +572,9 @@
             if (isMobileLayout()) {
                 const ref = heroEl.querySelector('.hero-bottom') || heroEl.querySelector('.hero-top');
                 const subBottom = ref.getBoundingClientRect().bottom;
-                convoEl.style.top = (subBottom + 12) + 'px';
-                convoEl.style.maskImage = 'linear-gradient(to bottom, transparent 0px, black 32px)';
-                convoEl.style.webkitMaskImage = 'linear-gradient(to bottom, transparent 0px, black 32px)';
+                convoEl.style.top = (subBottom + 14) + 'px';
+                convoEl.style.maskImage = 'linear-gradient(to bottom, transparent 0px, black 80px)';
+                convoEl.style.webkitMaskImage = 'linear-gradient(to bottom, transparent 0px, black 80px)';
             } else {
                 convoEl.style.top = '';
                 convoEl.style.maskImage = 'linear-gradient(to bottom, transparent 0px, black 80px)';
@@ -608,8 +608,13 @@
             if (!heroEl.classList.contains('compressed')) {
                 heroEl.classList.add('compressed');
                 convoEl.style.display = 'flex';
-                updateConversationTop();
-                setTimeout(updateConversationTop, 520);
+                const start = performance.now();
+                const duration = 720;
+                function track(now) {
+                    updateConversationTop();
+                    if (now - start < duration) requestAnimationFrame(track);
+                }
+                requestAnimationFrame(track);
             } else {
                 updateConversationTop();
             }
