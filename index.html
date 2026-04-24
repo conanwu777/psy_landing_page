@@ -565,7 +565,7 @@
         }
 
         function isMobileLayout() {
-            return window.innerWidth <= window.innerHeight;
+            return window.screen.width <= window.screen.height;
         }
 
         function updateConversationTop() {
@@ -582,6 +582,7 @@
             }
         }
         window.addEventListener('resize', updateConversationTop);
+        if (window.visualViewport) window.visualViewport.addEventListener('resize', updateConversationTop);
 
         // ── Subtitle fit ─────────────────────────────────────────
         const subtitleEl = document.querySelector('.subtitle');
