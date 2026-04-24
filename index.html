@@ -210,7 +210,10 @@
                 transition: height 0.7s cubic-bezier(0.4, 0, 0.2, 1);
             }
             .hero.compressed .hero-spacer {
-                height: 5vh;
+                height: 2vh;
+            }
+            .hero.compressed .subtitle {
+                margin-top: 0.4rem;
             }
             .hero-top {
                 flex: 0 0 auto;
@@ -566,18 +569,16 @@
         }
 
         function updateConversationTop() {
-            if (isMobileLayout() && heroEl.classList.contains('compressed')) {
+            if (isMobileLayout()) {
                 const ref = heroEl.querySelector('.hero-bottom') || heroEl.querySelector('.hero-top');
-                const subBottom = ref.getBoundingClientRect().bottom - convoEl.getBoundingClientRect().top;
-                const fadeEnd = subBottom + 8;
-                const fadeStart = fadeEnd - 80;
-                const mask = `linear-gradient(to bottom, transparent ${fadeStart}px, black ${fadeEnd}px)`;
-                convoEl.style.maskImage = mask;
-                convoEl.style.webkitMaskImage = mask;
+                const subBottom = ref.getBoundingClientRect().bottom;
+                convoEl.style.top = (subBottom + 12) + 'px';
+                convoEl.style.maskImage = 'linear-gradient(to bottom, transparent 0px, black 32px)';
+                convoEl.style.webkitMaskImage = 'linear-gradient(to bottom, transparent 0px, black 32px)';
             } else {
-                const mask = 'linear-gradient(to bottom, transparent 0px, black 80px)';
-                convoEl.style.maskImage = mask;
-                convoEl.style.webkitMaskImage = mask;
+                convoEl.style.top = '';
+                convoEl.style.maskImage = 'linear-gradient(to bottom, transparent 0px, black 80px)';
+                convoEl.style.webkitMaskImage = 'linear-gradient(to bottom, transparent 0px, black 80px)';
             }
         }
         window.addEventListener('resize', updateConversationTop);
