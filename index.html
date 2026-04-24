@@ -34,9 +34,8 @@
         }
 
         .container {
-            position: relative;
-            width: 100%;
-            height: 100vh;
+            position: fixed;
+            inset: 0;
         }
 
         #foliationCanvas {
@@ -117,7 +116,7 @@
             padding: 0 0.8rem 0.4rem;
             scrollbar-width: none;
             border-radius: 8px;
-            background: linear-gradient(to bottom, transparent 0%, rgba(255, 255, 255, 0.22) 100%);
+            background: linear-gradient(to bottom, transparent 0%, rgba(255, 255, 255, 0.35) 100%);
         }
 
         .conversation::-webkit-scrollbar { display: none; }
@@ -298,9 +297,12 @@
             return Math.max(0.25, 1.0 + 0.75 * s);
         };
 
+        let _canvasW = 0;
         function resize() {
+            if (window.innerWidth === _canvasW) return;
+            _canvasW = window.innerWidth;
             const dpr = window.devicePixelRatio || 1;
-            canvas.width = window.innerWidth * dpr;
+            canvas.width  = window.innerWidth  * dpr;
             canvas.height = window.innerHeight * dpr;
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         }
