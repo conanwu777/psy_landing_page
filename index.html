@@ -596,24 +596,7 @@
             convoEl.style.maskImage = 'linear-gradient(to bottom, transparent 0px, black 80px)';
             convoEl.style.webkitMaskImage = 'linear-gradient(to bottom, transparent 0px, black 80px)';
         }
-
-        function updateConversationBottom() {
-            if (window.innerWidth > window.innerHeight) {
-                convoEl.style.bottom = '';
-                return;
-            }
-            const rect = document.querySelector('.ask-bar').getBoundingClientRect();
-            const vvOffsetTop = window.visualViewport ? window.visualViewport.offsetTop : 0;
-            const askBarTopFromLayoutBottom = window.innerHeight - (vvOffsetTop + rect.top);
-            convoEl.style.bottom = (askBarTopFromLayoutBottom + 30) + 'px';
-        }
-
         window.addEventListener('resize', updateConversationTop);
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', updateConversationBottom);
-            window.visualViewport.addEventListener('scroll', updateConversationBottom);
-        }
-        requestAnimationFrame(updateConversationBottom);
 
         // ── Subtitle fit ─────────────────────────────────────────
         const subtitleEl = document.querySelector('.subtitle');
