@@ -606,13 +606,27 @@
             convoEl.style.bottom = (distToBottom * 2) + 'px';
         }
 
+        function stickBarToKeyboard() {
+            if (!window.visualViewport || window.innerWidth > window.innerHeight) {
+                askBarEl.style.bottom = '';
+                return;
+            }
+            const vv = window.visualViewport;
+            const keyboardHeight = window.innerHeight - (vv.offsetTop + vv.height);
+            askBarEl.style.bottom = keyboardHeight > 0 ? keyboardHeight + 'px' : '';
+            requestAnimationFrame(updateConversationBottom);
+        }
+
         function updateConversationTop() {
             convoEl.style.maskImage = 'linear-gradient(to bottom, transparent 0px, black 80px)';
             convoEl.style.webkitMaskImage = 'linear-gradient(to bottom, transparent 0px, black 80px)';
-            updateConversationBottom();
+            stickBarToKeyboard();
         }
         window.addEventListener('resize', updateConversationTop);
-        if (window.visualViewport) window.visualViewport.addEventListener('resize', updateConversationTop);
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', stickBarToKeyboard);
+            window.visualViewport.addEventListener('scroll', stickBarToKeyboard);
+        }
         requestAnimationFrame(updateConversationBottom);
 
         // ── Subtitle fit ─────────────────────────────────────────
