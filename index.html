@@ -605,7 +605,7 @@
             const rect = document.querySelector('.ask-bar').getBoundingClientRect();
             const vvOffsetTop = window.visualViewport ? window.visualViewport.offsetTop : 0;
             const askBarTopFromLayoutBottom = window.innerHeight - (vvOffsetTop + rect.top);
-            convoEl.style.bottom = (askBarTopFromLayoutBottom + 15) + 'px';
+            convoEl.style.bottom = (askBarTopFromLayoutBottom + 30) + 'px';
         }
 
         window.addEventListener('resize', updateConversationTop);
