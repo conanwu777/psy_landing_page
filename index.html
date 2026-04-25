@@ -570,8 +570,7 @@
         let streaming  = false;
 
         const fakePlaceholder = document.getElementById('fakePlaceholder');
-        askInput.addEventListener('focus', () => { fakePlaceholder.style.display = 'none'; });
-        askInput.addEventListener('blur',  () => { if (!askInput.value) fakePlaceholder.style.display = ''; });
+        askInput.addEventListener('focus', () => { fakePlaceholder.style.display = 'none'; }, { once: true });
 
         // ── Typewriter ───────────────────────────────────────────
         let twQueue  = [];
