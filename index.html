@@ -116,7 +116,7 @@
             padding: 0 0.8rem 0.4rem;
             scrollbar-width: none;
             border-radius: 8px;
-            background: linear-gradient(to bottom, transparent 0%, rgba(255, 255, 255, 0.35) 100%);
+            background: linear-gradient(to bottom, transparent 0%, rgba(243, 226, 220, 0.55) 100%);
         }
 
         .conversation::-webkit-scrollbar { display: none; }
@@ -714,7 +714,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        message: '[meta] A visitor just arrived at the Psy landing page. Send a brief, warm greeting as Psy — 1 or 2 sentences, in your voice.',
+                        message: '[meta] A visitor just arrived at the Psy landing page. Introduce yourself briefly and invite them to ask anything.',
                         session_id: sessionId
                     }),
                 });
