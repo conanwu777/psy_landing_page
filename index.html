@@ -598,17 +598,20 @@
         }
 
         function updateConversationBottom() {
-            if (!window.visualViewport || window.innerWidth > window.innerHeight) {
+            if (window.innerWidth > window.innerHeight) {
                 convoEl.style.bottom = '';
                 return;
             }
-            const obscured = window.innerHeight - window.visualViewport.height;
-            convoEl.style.bottom = (obscured + 55) + 'px';
+            const rect = document.querySelector('.ask-bar').getBoundingClientRect();
+            const vvOffsetTop = window.visualViewport ? window.visualViewport.offsetTop : 0;
+            const askBarTopFromLayoutBottom = window.innerHeight - (vvOffsetTop + rect.top);
+            convoEl.style.bottom = (askBarTopFromLayoutBottom + 15) + 'px';
         }
 
         window.addEventListener('resize', updateConversationTop);
         if (window.visualViewport) {
             window.visualViewport.addEventListener('resize', updateConversationBottom);
+            window.visualViewport.addEventListener('scroll', updateConversationBottom);
         }
         requestAnimationFrame(updateConversationBottom);
 
