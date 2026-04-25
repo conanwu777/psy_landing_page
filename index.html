@@ -115,7 +115,10 @@
             pointer-events: none;
             border-radius: 16px;
             background: linear-gradient(to bottom, transparent 0%, var(--surface) 55%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
         }
+        #panel.visible { opacity: 1; }
 
         .conversation {
             position: fixed;
@@ -795,6 +798,7 @@
         let greetingShown = false;
 
         askInput.addEventListener('focus', () => {
+            document.getElementById('panel').classList.add('visible');
             if (greetingShown || streaming) return;
             greetingShown = true;
             expandUI();
