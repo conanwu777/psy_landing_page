@@ -224,9 +224,6 @@
             left: -9999px;
             visibility: hidden;
             white-space: pre;
-            font-family: 'Courier Prime', monospace;
-            font-size: 15px;
-            font-weight: 700;
             pointer-events: none;
         }
 
@@ -606,6 +603,8 @@
         const askBar = document.querySelector('.ask-bar');
 
         function positionInputCursor() {
+            const cs = getComputedStyle(askInput);
+            inputMirror.style.font = cs.font;
             inputMirror.textContent = askInput.value;
             const inputRect = askInput.getBoundingClientRect();
             const barRect   = askBar.getBoundingClientRect();
