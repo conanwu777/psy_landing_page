@@ -255,7 +255,7 @@
 <div class="conversation" id="conversation"></div>
 
     <div class="ask-bar">
-        <input type="text" id="askInput" autocomplete="off" placeholder="What's Psy_?" />
+        <input type="text" id="askInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="What's Psy_?" />
         <span class="enter-icon">↵</span>
     </div>
 
@@ -596,7 +596,7 @@
         }
         window.addEventListener('resize', updateConversationTop);
         if (window.visualViewport) window.visualViewport.addEventListener('resize', updateConversationTop);
-        updateConversationBottom();
+        requestAnimationFrame(updateConversationBottom);
 
         // ── Subtitle fit ─────────────────────────────────────────
         const subtitleEl = document.querySelector('.subtitle');
