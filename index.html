@@ -35,7 +35,9 @@
 
         .container {
             position: fixed;
-            inset: 0;
+            top: 0;
+            left: 0;
+            width: 100%;
         }
 
         #foliationCanvas {
@@ -298,13 +300,19 @@
             return Math.max(0.25, 1.0 + 0.75 * s);
         };
 
+        const containerEl = document.querySelector('.container');
         let _canvasW = 0;
+        let _lockedH = window.innerHeight;
+        containerEl.style.height = _lockedH + 'px';
+
         function resize() {
-            if (window.innerWidth === _canvasW) return;
+            if (window.innerWidth === _canvasW) return; // height-only change = keyboard, ignore
             _canvasW = window.innerWidth;
+            _lockedH = window.innerHeight;
+            containerEl.style.height = _lockedH + 'px';
             const dpr = window.devicePixelRatio || 1;
-            canvas.width  = window.innerWidth  * dpr;
-            canvas.height = window.innerHeight * dpr;
+            canvas.width  = window.innerWidth * dpr;
+            canvas.height = _lockedH * dpr;
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         }
         window.addEventListener('resize', resize);
@@ -714,7 +722,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        message: '[meta] A visitor just arrived at the Psy landing page. Introduce yourself briefly and invite them to ask anything.',
+                        message: '[meta] A visitor just arrived at the landing page. An an identity narrator of Psy_, introduce yourself briefly and invite them to ask anything.',
                         session_id: sessionId
                     }),
                 });
