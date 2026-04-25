@@ -605,6 +605,7 @@
         }
 
         function twStart(textEl, container) {
+            if (twCursor && twCursor.parentNode) twCursor.parentNode.removeChild(twCursor);
             twEl = textEl;
             twActive = true;
             twCursor = document.createElement('span');
@@ -621,8 +622,6 @@
                 twQueue = [];
                 convoEl.scrollTop = convoEl.scrollHeight;
             }
-            if (twCursor && twCursor.parentNode) twCursor.parentNode.removeChild(twCursor);
-            twCursor = null;
             twEl = null;
         }
 
