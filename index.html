@@ -162,6 +162,7 @@
 
         .tw-cursor {
             animation: blink 1s steps(2) infinite;
+            font-weight: 900;
         }
 
         @keyframes tw-blink {
@@ -620,6 +621,7 @@
                 twQueue = [];
                 convoEl.scrollTop = convoEl.scrollHeight;
             }
+            if (twCursor && twCursor.parentNode) twCursor.parentNode.removeChild(twCursor);
             twCursor = null;
             twEl = null;
         }
