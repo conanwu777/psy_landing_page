@@ -183,8 +183,17 @@
             caret-color: var(--text-color);
         }
 
-        .ask-bar input::placeholder {
+        #fakePlaceholder {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
             color: var(--icon);
+            font-family: 'Courier Prime', monospace;
+            font-size: 15px;
+            font-weight: 700;
+            pointer-events: none;
+            user-select: none;
         }
 
         .ask-bar input:disabled {
@@ -234,7 +243,7 @@
                 bottom: 1rem;
                 box-sizing: border-box;
             }
-            .ask-bar input {
+            .ask-bar input, #fakePlaceholder {
                 font-size: 13px;
             }
             .conversation {
@@ -255,8 +264,9 @@
 <div class="conversation" id="conversation"></div>
 
     <div class="ask-bar">
-        <form autocomplete="off" style="flex:1;display:flex;margin:0;" onsubmit="return false;">
-            <input type="text" id="askInput" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="What's Psy_?" />
+        <form autocomplete="off" style="flex:1;display:flex;position:relative;margin:0;" onsubmit="return false;">
+            <input type="text" id="askInput" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" />
+            <span id="fakePlaceholder">What's Psy_?</span>
         </form>
         <span class="enter-icon">↵</span>
     </div>
@@ -516,6 +526,10 @@
 
         let sessionId = '';
         let streaming  = false;
+
+        const fakePlaceholder = document.getElementById('fakePlaceholder');
+        askInput.addEventListener('focus', () => { fakePlaceholder.style.display = 'none'; });
+        askInput.addEventListener('blur',  () => { if (!askInput.value) fakePlaceholder.style.display = ''; });
 
         // ── Typewriter ───────────────────────────────────────────
         let twQueue  = [];
@@ -790,7 +804,7 @@
             const text = askInput.value.trim();
             if (!text || streaming) return;
             askInput.value = '';
-            askInput.placeholder = '';
+            fakePlaceholder.style.display = 'none';
 
             expandUI();
             addMessage(text, 'user');
