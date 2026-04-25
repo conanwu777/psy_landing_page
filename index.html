@@ -167,7 +167,7 @@
             align-items: center;
             background: var(--surface);
             border-radius: 999px;
-            padding: 0.3rem 1rem 0.3rem 1.4rem;
+            padding: 5px 16px 5px 22px;
             gap: 0.6rem;
         }
 
@@ -224,7 +224,7 @@
                 height: 2vh;
             }
             .hero.compressed .subtitle {
-                margin-top: 0.4rem;
+                margin-top: 6px;
             }
             .hero-top {
                 flex: 0 0 auto;
@@ -238,9 +238,9 @@
                 max-width: 90vw;
             }
             .ask-bar {
-                left: 1rem;
-                right: 1rem;
-                bottom: 1rem;
+                left: 16px;
+                right: 16px;
+                bottom: 16px;
                 box-sizing: border-box;
             }
             .ask-bar input, #fakePlaceholder {
@@ -248,9 +248,9 @@
             }
             .conversation {
                 top: 160px;
-                left: 1rem;
-                right: 1rem;
-                bottom: 3rem;
+                left: 16px;
+                right: 16px;
+                bottom: 55px;
                 box-sizing: border-box;
             }
             .conversation p {
@@ -592,42 +592,11 @@
             return p;
         }
 
-        const askBarEl = document.querySelector('.ask-bar');
-
-        function updateConversationBottom() {
-            if (window.innerWidth > window.innerHeight) {
-                convoEl.style.bottom = '';
-                return;
-            }
-            const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-            const rect = askBarEl.getBoundingClientRect();
-            const barCenterY = (rect.top + rect.bottom) / 2;
-            const distToBottom = vh - barCenterY;
-            convoEl.style.bottom = (distToBottom * 2) + 'px';
-        }
-
-        function stickBarToKeyboard() {
-            if (!window.visualViewport || window.innerWidth > window.innerHeight) {
-                askBarEl.style.bottom = '';
-                return;
-            }
-            const vv = window.visualViewport;
-            const keyboardHeight = window.innerHeight - (vv.offsetTop + vv.height);
-            askBarEl.style.bottom = keyboardHeight > 0 ? keyboardHeight + 'px' : '';
-            requestAnimationFrame(updateConversationBottom);
-        }
-
         function updateConversationTop() {
             convoEl.style.maskImage = 'linear-gradient(to bottom, transparent 0px, black 80px)';
             convoEl.style.webkitMaskImage = 'linear-gradient(to bottom, transparent 0px, black 80px)';
-            stickBarToKeyboard();
         }
         window.addEventListener('resize', updateConversationTop);
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', stickBarToKeyboard);
-            window.visualViewport.addEventListener('scroll', stickBarToKeyboard);
-        }
-        requestAnimationFrame(updateConversationBottom);
 
         // ── Subtitle fit ─────────────────────────────────────────
         const subtitleEl = document.querySelector('.subtitle');
