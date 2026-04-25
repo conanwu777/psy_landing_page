@@ -192,12 +192,15 @@
         .ask-bar::before {
             content: '';
             position: absolute;
-            top: 0;
+            top: -1px;
             left: 18px;
             right: 18px;
-            height: 1px;
-            background: rgba(64, 56, 51, 0.18);
+            height: 2px;
+            background: rgba(64, 56, 51, 0.09);
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
+        .ask-bar.focused::before { opacity: 1; }
 
         .ask-bar input {
             flex: 1;
