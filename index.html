@@ -14,7 +14,7 @@
         :root {
             --text-color: #403833;
             --subtitle-color: #403833;
-            --base-bg: #c9a79f;
+            --base-bg: #d1b0a9;
         }
 
         * {
@@ -518,10 +518,10 @@
         }
 
         function twDelay(ch) {
-            let d = 10 + Math.random() * 20;
-            if ('.!?'.includes(ch))       d += 55 + Math.random() * 65;
-            else if (',;:'.includes(ch))  d += 22 + Math.random() * 28;
-            else if (ch === ' ' && Math.random() < 0.07) d += 18 + Math.random() * 22;
+            let d = 22 + Math.random() * 34;
+            if ('.!?'.includes(ch))       d += 80 + Math.random() * 90;
+            else if (',;:'.includes(ch))  d += 35 + Math.random() * 40;
+            else if (ch === ' ' && Math.random() < 0.07) d += 25 + Math.random() * 30;
             return d;
         }
 
@@ -699,6 +699,78 @@
                 askInput.focus();
             }
         }
+
+        async function streamGreeting() {
+            streaming = true;
+            const replyEl = document.createElement('p');
+            replyEl.classList.add('thinking');
+            replyEl.textContent = '...';
+            convoEl.appendChild(replyEl);
+            convoEl.scrollTop = convoEl.scrollHeight;
+            let textSpan = null;
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: '[meta] A visitor just arrived at the Psy landing page. Send a brief, warm greeting as Psy — 1 or 2 sentences, in your voice.',
+                        session_id: sessionId
+                    }),
+                });
+
+                if (!res.ok) throw new Error(`Server error ${res.status}`);
+
+                const reader = res.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                let firstToken = true;
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+
+                    for (const line of lines) {
+                        if (!line.startsWith('data: ')) continue;
+                        const data = line.slice(6);
+                        if (data === '[DONE]') break;
+                        if (data.startsWith('{')) {
+                            try { const j = JSON.parse(data); if (j.session_id) sessionId = j.session_id; } catch {}
+                            continue;
+                        }
+                        if (firstToken) {
+                            replyEl.classList.remove('thinking');
+                            replyEl.textContent = '';
+                            textSpan = document.createElement('span');
+                            replyEl.appendChild(textSpan);
+                            twStart(textSpan, replyEl);
+                            firstToken = false;
+                        }
+                        twEnqueue(data.replace(/\\n/g, '\n'));
+                    }
+                }
+            } catch (err) {
+                twStop();
+                replyEl.classList.remove('thinking');
+                replyEl.textContent = '[connection error]';
+                replyEl.style.opacity = '0.4';
+            } finally {
+                streaming = false;
+                askInput.disabled = false;
+            }
+        }
+
+        let greetingShown = false;
+
+        askInput.addEventListener('focus', () => {
+            if (greetingShown || streaming) return;
+            greetingShown = true;
+            expandUI();
+            streamGreeting();
+        });
 
         askInput.addEventListener('keydown', e => {
             if (e.key !== 'Enter') return;
