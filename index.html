@@ -816,6 +816,7 @@
             const text = askInput.value.trim();
             if (!text || streaming) return;
             askInput.value = '';
+            askInput.blur();
             fakePlaceholder.style.display = 'none';
 
             expandUI();
