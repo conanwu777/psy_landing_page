@@ -125,7 +125,7 @@
             top: 1.5rem;
             left: calc(100% * 2 / 3 - 1.2rem);
             right: 1.2rem;
-            bottom: calc(5rem + 8px);
+            bottom: 5.5 rem ;
             z-index: 15;
             overflow-y: auto;
             display: none;
@@ -358,8 +358,8 @@
         resize();
 
         function draw() {
-            const width = window.innerWidth;
-            const height = window.innerHeight;
+            const width = _canvasW || window.innerWidth;
+            const height = _lockedH;
 
             const gradX1 = width  * (0.45 + Math.sin(time * 0.38) * 0.30);
             const gradY1 = height * (0.42 + Math.cos(time * 0.28) * 0.26);
