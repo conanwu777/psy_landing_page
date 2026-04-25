@@ -596,7 +596,21 @@
             convoEl.style.maskImage = 'linear-gradient(to bottom, transparent 0px, black 80px)';
             convoEl.style.webkitMaskImage = 'linear-gradient(to bottom, transparent 0px, black 80px)';
         }
+
+        function updateConversationBottom() {
+            if (!window.visualViewport || window.innerWidth > window.innerHeight) {
+                convoEl.style.bottom = '';
+                return;
+            }
+            const obscured = window.innerHeight - window.visualViewport.height;
+            convoEl.style.bottom = (obscured + 55) + 'px';
+        }
+
         window.addEventListener('resize', updateConversationTop);
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', updateConversationBottom);
+        }
+        requestAnimationFrame(updateConversationBottom);
 
         // ── Subtitle fit ─────────────────────────────────────────
         const subtitleEl = document.querySelector('.subtitle');
