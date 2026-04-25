@@ -233,7 +233,9 @@
             .ask-bar {
                 left: 1rem;
                 right: 1rem;
-                bottom: 1rem;
+                bottom: auto;
+                top: 50%;
+                transform: translateY(-50%);
                 box-sizing: border-box;
             }
             .ask-bar input {
@@ -243,7 +245,7 @@
                 top: 160px;
                 left: 1rem;
                 right: 1rem;
-                bottom: calc(3rem + 13px);
+                bottom: calc(50% + 2rem);
                 box-sizing: border-box;
             }
             .conversation p {
@@ -578,22 +580,9 @@
             return p;
         }
 
-        function isMobileLayout() {
-            return window.screen.width <= window.screen.height;
-        }
-
         function updateConversationTop() {
-            if (isMobileLayout()) {
-                const ref = heroEl.querySelector('.hero-bottom') || heroEl.querySelector('.hero-top');
-                const subBottom = ref.getBoundingClientRect().bottom;
-                convoEl.style.top = (subBottom + 14) + 'px';
-                convoEl.style.maskImage = 'linear-gradient(to bottom, transparent 0px, black 80px)';
-                convoEl.style.webkitMaskImage = 'linear-gradient(to bottom, transparent 0px, black 80px)';
-            } else {
-                convoEl.style.top = '';
-                convoEl.style.maskImage = 'linear-gradient(to bottom, transparent 0px, black 80px)';
-                convoEl.style.webkitMaskImage = 'linear-gradient(to bottom, transparent 0px, black 80px)';
-            }
+            convoEl.style.maskImage = 'linear-gradient(to bottom, transparent 0px, black 80px)';
+            convoEl.style.webkitMaskImage = 'linear-gradient(to bottom, transparent 0px, black 80px)';
         }
         window.addEventListener('resize', updateConversationTop);
         if (window.visualViewport) window.visualViewport.addEventListener('resize', updateConversationTop);
