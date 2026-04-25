@@ -583,9 +583,10 @@
                 convoEl.style.bottom = '';
                 return;
             }
+            const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
             const rect = askBarEl.getBoundingClientRect();
             const barCenterY = (rect.top + rect.bottom) / 2;
-            const distToBottom = window.innerHeight - barCenterY;
+            const distToBottom = vh - barCenterY;
             convoEl.style.bottom = (distToBottom * 2) + 'px';
         }
 
