@@ -33,7 +33,6 @@
             background-color: var(--base-bg);
             font-family: 'Courier Prime', monospace;
             color: var(--text-color);
-            cursor: none;
         }
 
         .container {
@@ -204,20 +203,7 @@
             pointer-events: none;
         }
 
-        #mouseDot {
-            position: fixed;
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.75);
-            pointer-events: none;
-            z-index: 9999;
-            transform: translate(-50%, -50%);
-            top: 0;
-            left: 0;
-        }
-
-@media (max-aspect-ratio: 1/1) {
+        @media (max-aspect-ratio: 1/1) {
             .hero {
                 padding: 0 5%;
                 justify-content: flex-start;
@@ -268,9 +254,7 @@
 </head>
 <body>
 
-    <div id="mouseDot"></div>
-
-    <div class="conversation" id="conversation"></div>
+<div class="conversation" id="conversation"></div>
 
     <div class="ask-bar">
         <input type="text" id="askInput" placeholder="What's Psy_?" />
@@ -307,13 +291,7 @@
         let prevMouse = { x: mouse.x, y: mouse.y };
         let mouseStrength = 0;
 
-        const mouseDot = document.getElementById('mouseDot');
-        window.addEventListener('mousemove', e => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
-            mouseDot.style.left = e.clientX + 'px';
-            mouseDot.style.top  = e.clientY + 'px';
-        });
+        window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
         const LINE_COUNT = 50;
         const BASE_SPACING = 17;
