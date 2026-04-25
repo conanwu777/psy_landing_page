@@ -215,7 +215,32 @@
             font-size: 15px;
             font-weight: 700;
             color: var(--text-muted);
-            caret-color: var(--text-color);
+            caret-color: transparent;
+        }
+
+        #inputMirror {
+            position: fixed;
+            top: -9999px;
+            left: -9999px;
+            visibility: hidden;
+            white-space: pre;
+            font-family: 'Courier Prime', monospace;
+            font-size: 15px;
+            font-weight: 700;
+            pointer-events: none;
+        }
+
+        #inputCursor {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-family: 'Courier Prime', monospace;
+            font-size: 15px;
+            font-weight: 900;
+            color: var(--text-muted);
+            animation: blink 1s steps(2) infinite;
+            pointer-events: none;
+            display: none;
         }
 
         #fakePlaceholder {
@@ -312,6 +337,8 @@
             <span id="fakePlaceholder">What's Psy_?</span>
         </form>
         <span class="enter-icon">↵</span>
+        <span id="inputMirror" aria-hidden="true"></span>
+        <span id="inputCursor" aria-hidden="true">_</span>
     </div>
 
     <div class="container">
@@ -572,6 +599,28 @@
 
         const fakePlaceholder = document.getElementById('fakePlaceholder');
         askInput.addEventListener('focus', () => { fakePlaceholder.style.display = 'none'; }, { once: true });
+
+        // ── Input cursor ─────────────────────────────────────────
+        const inputMirror = document.getElementById('inputMirror');
+        const inputCursor = document.getElementById('inputCursor');
+        const askBar = document.querySelector('.ask-bar');
+
+        function positionInputCursor() {
+            inputMirror.textContent = askInput.value;
+            const inputRect = askInput.getBoundingClientRect();
+            const barRect   = askBar.getBoundingClientRect();
+            const textWidth = inputMirror.getBoundingClientRect().width;
+            const inputLeft = inputRect.left - barRect.left;
+            const cursorX   = inputLeft + Math.min(textWidth - askInput.scrollLeft, inputRect.width);
+            inputCursor.style.left = cursorX + 'px';
+        }
+
+        askInput.addEventListener('focus', () => {
+            inputCursor.style.display = '';
+            positionInputCursor();
+        });
+        askInput.addEventListener('input', positionInputCursor);
+        askInput.addEventListener('blur',  () => { inputCursor.style.display = 'none'; });
 
         // ── Typewriter ───────────────────────────────────────────
         let twQueue  = [];
