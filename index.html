@@ -255,7 +255,9 @@
 <div class="conversation" id="conversation"></div>
 
     <div class="ask-bar">
-        <input type="text" id="askInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="What's Psy_?" />
+        <form autocomplete="off" style="flex:1;display:flex;margin:0;" onsubmit="return false;">
+            <input type="text" id="askInput" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="What's Psy_?" />
+        </form>
         <span class="enter-icon">↵</span>
     </div>
 
