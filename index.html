@@ -692,9 +692,9 @@
         function updatePanelTop() {
             if (screen.width < screen.height) {
                 const visualOffset = window.visualViewport ? window.visualViewport.offsetTop : 0;
-                const top = subtitleEl.getBoundingClientRect().bottom + visualOffset + 'px';
-                panelEl.style.top = top;
-                convoEl.style.top = top;
+                const panelTop = subtitleEl.getBoundingClientRect().bottom + visualOffset;
+                panelEl.style.top = panelTop + 'px';
+                convoEl.style.top = (panelTop + 32) + 'px';
             } else {
                 panelEl.style.top = '';
                 convoEl.style.top = '';
