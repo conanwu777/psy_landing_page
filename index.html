@@ -700,7 +700,7 @@
             }
             updateConversationTop();
         }
-        window.addEventListener('resize', updatePanelTop);
+        window.addEventListener('orientationchange', updatePanelTop);
 
         // ── Subtitle fit ─────────────────────────────────────────
         const subtitleEl = document.querySelector('.subtitle');
