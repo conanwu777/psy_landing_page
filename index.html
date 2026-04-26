@@ -590,6 +590,7 @@
         const askInput = document.getElementById('askInput');
         const convoEl  = document.getElementById('conversation');
         const heroEl   = document.getElementById('hero');
+        const panelEl  = document.getElementById('panel');
 
         let sessionId = '';
         let streaming  = false;
@@ -683,10 +684,23 @@
         }
 
         function updateConversationTop() {
-            convoEl.style.maskImage = 'linear-gradient(to bottom, transparent 0px, black 80px)';
-            convoEl.style.webkitMaskImage = 'linear-gradient(to bottom, transparent 0px, black 80px)';
+            convoEl.style.maskImage = 'linear-gradient(to bottom, transparent 0px, black 50px)';
+            convoEl.style.webkitMaskImage = 'linear-gradient(to bottom, transparent 0px, black 50px)';
         }
         window.addEventListener('resize', updateConversationTop);
+
+        function updatePanelTop() {
+            if (window.innerWidth < window.innerHeight) {
+                const top = subtitleEl.getBoundingClientRect().bottom + 'px';
+                panelEl.style.top = top;
+                convoEl.style.top = top;
+            } else {
+                panelEl.style.top = '';
+                convoEl.style.top = '';
+            }
+            updateConversationTop();
+        }
+        window.addEventListener('resize', updatePanelTop);
 
         // ── Subtitle fit ─────────────────────────────────────────
         const subtitleEl = document.querySelector('.subtitle');
@@ -707,7 +721,7 @@
             }
         }
         window.addEventListener('resize', fitSubtitle);
-        document.fonts.ready.then(fitSubtitle);
+        document.fonts.ready.then(() => { fitSubtitle(); updatePanelTop(); });
 
         function expandUI() {
             if (!heroEl.classList.contains('compressed')) {
@@ -717,6 +731,7 @@
                 const duration = 720;
                 function track(now) {
                     updateConversationTop();
+                    updatePanelTop();
                     if (now - start < duration) requestAnimationFrame(track);
                 }
                 requestAnimationFrame(track);
