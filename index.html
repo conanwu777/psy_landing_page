@@ -369,6 +369,8 @@
         let mouseStrength = 0;
 
         window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+        window.addEventListener('touchmove',  e => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; }, { passive: true });
+        window.addEventListener('touchstart', e => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; }, { passive: true });
 
         const LINE_COUNT = 50;
         const BASE_SPACING = 17;
@@ -694,7 +696,7 @@
                 const visualOffset = window.visualViewport ? window.visualViewport.offsetTop : 0;
                 const panelTop = subtitleEl.getBoundingClientRect().bottom + visualOffset;
                 panelEl.style.top = panelTop + 'px';
-                convoEl.style.top = (panelTop + 32) + 'px';
+                convoEl.style.top = (panelTop + 16) + 'px';
             } else {
                 panelEl.style.top = '';
                 convoEl.style.top = '';
