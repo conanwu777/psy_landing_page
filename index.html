@@ -692,7 +692,7 @@
         window.addEventListener('resize', updateConversationTop);
 
         function updatePanelTop() {
-            if (window.innerWidth < window.innerHeight) {
+            if (screen.width < screen.height) {
                 const top = subtitleEl.getBoundingClientRect().bottom + 'px';
                 panelEl.style.top = top;
                 convoEl.style.top = top;
