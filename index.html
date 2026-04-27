@@ -629,6 +629,15 @@
         let twEl     = null;
         let twCursor = null;
         let twActive = false;
+        let userScrolledUp = false;
+
+        convoEl.addEventListener('scroll', () => {
+            userScrolledUp = convoEl.scrollHeight - convoEl.scrollTop - convoEl.clientHeight > 80;
+        });
+
+        function scrollToBottom(force) {
+            if (force || !userScrolledUp) convoEl.scrollTop = convoEl.scrollHeight;
+        }
 
         function twEnqueue(text) {
             for (const ch of text) twQueue.push(ch);
@@ -651,7 +660,7 @@
             }
             const ch = twQueue.shift();
             twEl.textContent += ch;
-            convoEl.scrollTop = convoEl.scrollHeight;
+            scrollToBottom();
             setTimeout(twTick, twDelay(ch));
         }
 
@@ -671,7 +680,7 @@
             if (twEl && twQueue.length) {
                 twEl.textContent += twQueue.join('');
                 twQueue = [];
-                convoEl.scrollTop = convoEl.scrollHeight;
+                scrollToBottom();
             }
             twEl = null;
         }
@@ -681,7 +690,7 @@
             p.textContent = text;
             if (role === 'user') p.classList.add('user');
             convoEl.appendChild(p);
-            convoEl.scrollTop = convoEl.scrollHeight;
+            scrollToBottom(true);
             return p;
         }
 
@@ -751,7 +760,7 @@
             replyEl.classList.add('thinking');
             replyEl.textContent = '...';
             convoEl.appendChild(replyEl);
-            convoEl.scrollTop = convoEl.scrollHeight;
+            scrollToBottom(true);
             let textSpan = null;
 
             try {
@@ -824,7 +833,7 @@
             replyEl.classList.add('thinking');
             replyEl.textContent = '...';
             convoEl.appendChild(replyEl);
-            convoEl.scrollTop = convoEl.scrollHeight;
+            scrollToBottom(true);
             let textSpan = null;
 
             try {
