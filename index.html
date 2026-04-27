@@ -133,10 +133,13 @@
             overflow-y: auto;
             display: none;
             flex-direction: column;
-            justify-content: flex-end;
             padding: 0 18px 0.4rem 18px;
             scrollbar-width: none;
             background: none;
+        }
+
+        .conversation-spacer {
+            flex: 1 1 auto;
         }
 
         .conversation::-webkit-scrollbar { display: none; }
@@ -326,7 +329,7 @@
 <body>
 
 <div id="panel"></div>
-<div class="conversation" id="conversation"></div>
+<div class="conversation" id="conversation"><div class="conversation-spacer"></div></div>
 
     <div class="ask-bar">
         <form autocomplete="off" style="flex:1;display:flex;position:relative;margin:0;" onsubmit="return false;">
