@@ -270,6 +270,79 @@
             pointer-events: none;
         }
 
+        /* ── Email bar ── */
+        #emailWidget {
+            position: fixed;
+            top: 1.1rem;
+            right: 1.2rem;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        #emailSlide {
+            display: flex;
+            align-items: center;
+            max-width: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-width 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+        }
+        #emailSlide.open {
+            max-width: 320px;
+            opacity: 1;
+        }
+
+        #emailPill {
+            display: flex;
+            align-items: center;
+            background: var(--surface);
+            border-radius: 999px;
+            padding: 5px 16px 5px 18px;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        #emailInput {
+            background: none;
+            border: none;
+            font-family: 'Courier Prime', monospace;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-muted);
+            outline: none;
+            width: 185px;
+        }
+        #emailInput::placeholder { color: var(--icon); }
+        #emailInput:-webkit-autofill,
+        #emailInput:-webkit-autofill:hover,
+        #emailInput:-webkit-autofill:focus {
+            -webkit-box-shadow: 0 0 0px 1000px #e4ccc6 inset;
+            -webkit-text-fill-color: rgba(64,56,51,0.65);
+            transition: background-color 99999s ease-in-out 0s;
+        }
+
+        #emailEnter {
+            color: var(--icon);
+            font-size: 1.4rem;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        #emailIcon {
+            cursor: pointer;
+            color: var(--text-muted);
+            opacity: 0.85;
+            transition: opacity 0.2s ease;
+            line-height: 0;
+            flex-shrink: 0;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+        #emailIcon:hover { opacity: 1; }
+
         @media (max-aspect-ratio: 1/1) {
             #panel {
                 left: 16px;
@@ -327,6 +400,22 @@
     </style>
 </head>
 <body>
+
+<!-- Email bar -->
+<div id="emailWidget">
+    <div id="emailSlide">
+        <div id="emailPill">
+            <input type="email" id="emailInput" placeholder="your@email.com" autocomplete="email" />
+            <span id="emailEnter">↵</span>
+        </div>
+    </div>
+    <button id="emailIcon" aria-label="Stay in touch">
+        <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="1" y="1" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/>
+            <polyline points="1,1 10,9 19,1" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+    </button>
+</div>
 
 <div id="panel"></div>
 <div class="conversation" id="conversation"><div class="conversation-spacer"></div></div>
@@ -830,7 +919,7 @@
             }
         }
 
-        async function streamGreeting() {
+        async function streamMeta(message) {
             streaming = true;
             const replyEl = document.createElement('p');
             replyEl.classList.add('thinking');
@@ -843,26 +932,19 @@
                 const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        message: '[meta] A visitor just arrived at the landing page. An an identity narrator of Psy_, introduce yourself briefly and invite them to ask anything.',
-                        session_id: sessionId
-                    }),
+                    body: JSON.stringify({ message, session_id: sessionId }),
                 });
-
                 if (!res.ok) throw new Error(`Server error ${res.status}`);
-
                 const reader = res.body.getReader();
                 const decoder = new TextDecoder();
                 let buffer = '';
                 let firstToken = true;
-
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
                     buffer += decoder.decode(value, { stream: true });
                     const lines = buffer.split('\n');
                     buffer = lines.pop();
-
                     for (const line of lines) {
                         if (!line.startsWith('data: ')) continue;
                         const data = line.slice(6);
@@ -901,7 +983,7 @@
             if (greetingShown || streaming) return;
             greetingShown = true;
             expandUI();
-            streamGreeting();
+            streamMeta('[meta] A visitor just arrived at the landing page. As the identity narrator of Psy_, introduce yourself briefly and invite them to ask anything.');
         });
 
         askInput.addEventListener('keydown', e => {
@@ -918,6 +1000,72 @@
         });
 
         requestAnimationFrame(updatePanelTop);
+
+        // ── Email bar ────────────────────────────────────────────
+        const emailIcon  = document.getElementById('emailIcon');
+        const emailSlide = document.getElementById('emailSlide');
+        const emailInput = document.getElementById('emailInput');
+
+        const emailIconWidth = () => emailIcon.offsetWidth + 8; // 8 = gap in px
+
+        function openEmail() {
+            emailSlide.classList.add('open');
+            emailIcon.style.display = 'none';
+            document.getElementById('emailWidget').style.marginRight = -emailIconWidth() + 'px';
+            setTimeout(() => emailInput.focus(), 320);
+        }
+
+        function closeEmail() {
+            emailSlide.classList.remove('open');
+            emailIcon.style.display = '';
+            document.getElementById('emailWidget').style.marginRight = '';
+            emailInput.value = '';
+        }
+
+        emailIcon.addEventListener('click', () => {
+            emailSlide.classList.contains('open') ? closeEmail() : openEmail();
+        });
+
+        document.addEventListener('click', e => {
+            if (!document.getElementById('emailWidget').contains(e.target)) closeEmail();
+        });
+
+        function validEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e); }
+
+        async function submitEmail() {
+            const email = emailInput.value.trim();
+            if (!validEmail(email)) {
+                emailInput.style.outline = '1.5px solid rgba(160,80,80,0.6)';
+                emailInput.focus();
+                setTimeout(() => { emailInput.style.outline = ''; }, 1200);
+                return;
+            }
+            try {
+                await fetch(API_URL.replace('/chat', '/subscribe'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email }),
+                });
+            } catch (_) {}
+            emailInput.value = '';
+            emailInput.placeholder = 'noted.';
+            setTimeout(() => {
+                closeEmail();
+                setTimeout(() => { emailInput.placeholder = 'your@email.com'; }, 400);
+            }, 1600);
+            document.getElementById('panel').classList.add('visible');
+            document.querySelector('.ask-bar').classList.add('focused');
+            greetingShown = true;
+            expandUI();
+            streamMeta('[meta] The visitor just signed up to the Psy_ waitlist. Warmly acknowledge this in one or two sentences — thank them, let them know Psy_ will keep them posted as it evolves, and hint that they may be invited to beta test.');
+        }
+
+        emailInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') submitEmail();
+            if (e.key === 'Escape') closeEmail();
+        });
+
+        document.getElementById('emailEnter').addEventListener('click', submitEmail);
     </script>
 </body>
 </html>
