@@ -688,6 +688,18 @@
 
         let sessionId = '';
         let streaming  = false;
+        let visitorName = '';
+        let waitingForName = false;
+        let pendingNameEmail = '';
+        let exchangeCount = 0;
+
+        function extractName(text) {
+            return text
+                .replace(/^(hi,?\s*|hello,?\s*|hey,?\s*|i'?m\s+|my name is\s+|it'?s\s+|this is\s+|call me\s+)/i, '')
+                .split(/[,!.?\n]/)[0]
+                .trim()
+                .slice(0, 40);
+        }
 
         const fakePlaceholder = document.getElementById('fakePlaceholder');
         askInput.addEventListener('focus', () => { fakePlaceholder.style.display = 'none'; }, { once: true });
@@ -982,8 +994,9 @@
             document.querySelector('.ask-bar').classList.add('focused');
             if (greetingShown || streaming) return;
             greetingShown = true;
+            waitingForName = true;
             expandUI();
-            streamMeta('[meta] A visitor just arrived at the landing page. As the identity narrator of Psy_, introduce yourself briefly and invite them to ask anything.');
+            streamMeta('[meta] A visitor just arrived. Welcome them in one line and ask for their name.');
         });
 
         askInput.addEventListener('keydown', e => {
@@ -994,6 +1007,20 @@
             askInput.blur();
             fakePlaceholder.style.display = 'none';
 
+            if (waitingForName) {
+                visitorName = extractName(text);
+                waitingForName = false;
+                if (pendingNameEmail) {
+                    fetch(API_URL.replace('/chat', '/subscribe/update_name'), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: pendingNameEmail, name: visitorName }),
+                    }).catch(() => {});
+                    pendingNameEmail = '';
+                }
+            }
+
+            exchangeCount++;
             expandUI();
             addMessage(text, 'user');
             streamResponse(text);
@@ -1045,7 +1072,7 @@
                 const res = await fetch(API_URL.replace('/chat', '/subscribe'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email }),
+                    body: JSON.stringify({ email, name: visitorName }),
                 });
                 const data = await res.json();
                 duplicate = data.duplicate;
@@ -1060,9 +1087,16 @@
             document.querySelector('.ask-bar').classList.add('focused');
             greetingShown = true;
             expandUI();
-            const metaMsg = duplicate
-                ? '[meta] The visitor tried to sign up but their email is already on the Psy_ waitlist. Acknowledge this warmly and briefly — let them know they\'re already on the list and good things take time.'
-                : '[meta] The visitor just signed up to the Psy_ waitlist. Warmly acknowledge this in one or two sentences — thank them, let them know Psy_ will keep them posted as it evolves, and hint that they may be invited to beta test.';
+            let metaMsg;
+            if (duplicate) {
+                metaMsg = '[meta] The visitor tried to sign up but their email is already on the Psy_ waitlist. Acknowledge this warmly and briefly — let them know they\'re already on the list and good things take time.';
+            } else if (!visitorName) {
+                pendingNameEmail = email;
+                waitingForName = true;
+                metaMsg = '[meta] The visitor just signed up to the Psy_ waitlist but hasn\'t shared their name yet. Thank them warmly, then naturally ask for their name — keep it brief.';
+            } else {
+                metaMsg = `[meta] The visitor (${visitorName}) just signed up to the Psy_ waitlist. Warmly acknowledge this — thank them by name, let them know Psy_ will keep them posted, and hint they may be invited to beta test.`;
+            }
             streamMeta(metaMsg);
         }
 
