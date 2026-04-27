@@ -1040,15 +1040,18 @@
                 setTimeout(() => { emailInput.style.outline = ''; }, 1200);
                 return;
             }
+            let duplicate = false;
             try {
-                await fetch(API_URL.replace('/chat', '/subscribe'), {
+                const res = await fetch(API_URL.replace('/chat', '/subscribe'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email }),
                 });
+                const data = await res.json();
+                duplicate = data.duplicate;
             } catch (_) {}
             emailInput.value = '';
-            emailInput.placeholder = 'noted.';
+            emailInput.placeholder = duplicate ? 'already noted.' : 'noted.';
             setTimeout(() => {
                 closeEmail();
                 setTimeout(() => { emailInput.placeholder = 'your@email.com'; }, 400);
@@ -1057,7 +1060,10 @@
             document.querySelector('.ask-bar').classList.add('focused');
             greetingShown = true;
             expandUI();
-            streamMeta('[meta] The visitor just signed up to the Psy_ waitlist. Warmly acknowledge this in one or two sentences — thank them, let them know Psy_ will keep them posted as it evolves, and hint that they may be invited to beta test.');
+            const metaMsg = duplicate
+                ? '[meta] The visitor tried to sign up but their email is already on the Psy_ waitlist. Acknowledge this warmly and briefly — let them know they\'re already on the list and good things take time.'
+                : '[meta] The visitor just signed up to the Psy_ waitlist. Warmly acknowledge this in one or two sentences — thank them, let them know Psy_ will keep them posted as it evolves, and hint that they may be invited to beta test.';
+            streamMeta(metaMsg);
         }
 
         emailInput.addEventListener('keydown', e => {
