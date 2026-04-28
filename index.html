@@ -267,7 +267,7 @@
             justify-content: center;
             color: var(--icon);
             font-size: 1.4rem;
-            pointer-events: none;
+            cursor: pointer;
         }
 
         /* ── Email bar ── */
@@ -425,7 +425,7 @@
             <input type="text" id="askInput" autocomplete="new-password" autocorrect="on" autocapitalize="on" spellcheck="true" />
             <span id="fakePlaceholder">What's Psy_?</span>
         </form>
-        <span class="enter-icon">↵</span>
+        <span class="enter-icon" id="askEnter">↵</span>
         <span id="inputMirror" aria-hidden="true"></span>
         <span id="inputCursor" aria-hidden="true">_</span>
     </div>
@@ -999,8 +999,7 @@
             streamMeta('[meta] A visitor just arrived. Welcome them in one line and ask for their name.');
         });
 
-        askInput.addEventListener('keydown', e => {
-            if (e.key !== 'Enter') return;
+        function submitMessage() {
             const text = askInput.value.trim();
             if (!text || streaming) return;
             askInput.value = '';
@@ -1024,6 +1023,10 @@
             expandUI();
             addMessage(text, 'user');
             streamResponse(text);
+        }
+
+        askInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') submitMessage();
         });
 
         requestAnimationFrame(updatePanelTop);
@@ -1106,6 +1109,8 @@
         });
 
         document.getElementById('emailEnter').addEventListener('click', submitEmail);
+
+        document.getElementById('askEnter').addEventListener('click', submitMessage);
     </script>
 </body>
 </html>
