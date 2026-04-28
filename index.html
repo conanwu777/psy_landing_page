@@ -340,6 +340,7 @@
             background: none;
             border: none;
             padding: 0;
+            margin-right: 16px;
         }
         #emailIcon:hover { opacity: 1; }
 
@@ -1036,19 +1037,15 @@
         const emailSlide = document.getElementById('emailSlide');
         const emailInput = document.getElementById('emailInput');
 
-        const emailIconWidth = () => emailIcon.offsetWidth + 8; // 8 = gap in px
-
         function openEmail() {
             emailSlide.classList.add('open');
             emailIcon.style.display = 'none';
-            document.getElementById('emailWidget').style.marginRight = -emailIconWidth() + 'px';
             setTimeout(() => emailInput.focus(), 320);
         }
 
         function closeEmail() {
             emailSlide.classList.remove('open');
             emailIcon.style.display = '';
-            document.getElementById('emailWidget').style.marginRight = '';
             emailInput.value = '';
         }
 
