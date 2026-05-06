@@ -688,6 +688,7 @@
         const panelEl  = document.getElementById('panel');
 
         let sessionId = '';
+        const pageReferrer = document.referrer || '';
         let streaming  = false;
         let visitorName = '';
         let waitingForName = false;
@@ -872,7 +873,7 @@
                 const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: userText, session_id: sessionId }),
+                    body: JSON.stringify({ message: userText, session_id: sessionId, referrer: pageReferrer }),
                 });
 
                 if (!res.ok) throw new Error(`Server error ${res.status}`);
@@ -945,7 +946,7 @@
                 const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message, session_id: sessionId }),
+                    body: JSON.stringify({ message, session_id: sessionId, referrer: pageReferrer }),
                 });
                 if (!res.ok) throw new Error(`Server error ${res.status}`);
                 const reader = res.body.getReader();
