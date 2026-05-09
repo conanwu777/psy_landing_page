@@ -909,8 +909,11 @@
                         await new Promise(r => setTimeout(r, 3000));
                     } else {
                         replyEl.classList.remove('thinking');
-                        replyEl.textContent = errorText;
-                        replyEl.style.opacity = '0.4';
+                        replyEl.textContent = '';
+                        const errSpan = document.createElement('span');
+                        replyEl.appendChild(errSpan);
+                        twStart(errSpan, replyEl);
+                        twEnqueue(errorText);
                         console.error(err);
                     }
                 }
@@ -925,7 +928,7 @@
             replyEl.textContent = '...';
             convoEl.appendChild(replyEl);
             scrollToBottom(true);
-            await streamWithRetry(userText, replyEl, 'The line went quiet — our server may be temporarily away. Try again in a moment.');
+            await streamWithRetry(userText, replyEl, 'The line went quiet — our server may be temporarily down... Try again in a moment.');
             streaming = false;
             askInput.disabled = false;
             askInput.focus();
