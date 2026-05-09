@@ -858,79 +858,77 @@
             }
         }
 
+        async function doStreamFetch(message, replyEl) {
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message, session_id: sessionId, referrer: pageReferrer }),
+            });
+            if (!res.ok) throw new Error(`Server error ${res.status}`);
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let firstToken = true;
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop();
+                for (const line of lines) {
+                    if (!line.startsWith('data: ')) continue;
+                    const data = line.slice(6);
+                    if (data === '[DONE]') break;
+                    if (data.startsWith('{')) {
+                        try { const j = JSON.parse(data); if (j.session_id) sessionId = j.session_id; } catch {}
+                        continue;
+                    }
+                    if (firstToken) {
+                        replyEl.classList.remove('thinking');
+                        replyEl.textContent = '';
+                        const textSpan = document.createElement('span');
+                        replyEl.appendChild(textSpan);
+                        twStart(textSpan, replyEl);
+                        firstToken = false;
+                    }
+                    twEnqueue(data.replace(/\\n/g, '\n'));
+                }
+            }
+        }
+
+        async function streamWithRetry(message, replyEl, errorText) {
+            for (let attempt = 0; attempt < 2; attempt++) {
+                try {
+                    await doStreamFetch(message, replyEl);
+                    return;
+                } catch (err) {
+                    twStop();
+                    if (attempt === 0) {
+                        replyEl.classList.add('thinking');
+                        replyEl.textContent = '...';
+                        await new Promise(r => setTimeout(r, 3000));
+                    } else {
+                        replyEl.classList.remove('thinking');
+                        replyEl.textContent = errorText;
+                        replyEl.style.opacity = '0.4';
+                        console.error(err);
+                    }
+                }
+            }
+        }
+
         async function streamResponse(userText) {
             streaming = true;
             askInput.disabled = true;
-
             const replyEl = document.createElement('p');
             replyEl.classList.add('thinking');
             replyEl.textContent = '...';
             convoEl.appendChild(replyEl);
             scrollToBottom(true);
-            let textSpan = null;
-
-            try {
-                const res = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: userText, session_id: sessionId, referrer: pageReferrer }),
-                });
-
-                if (!res.ok) throw new Error(`Server error ${res.status}`);
-
-                const reader = res.body.getReader();
-                const decoder = new TextDecoder();
-                let buffer = '';
-                let firstToken = true;
-
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    buffer += decoder.decode(value, { stream: true });
-
-                    const lines = buffer.split('\n');
-                    buffer = lines.pop();
-
-                    for (const line of lines) {
-                        if (!line.startsWith('data: ')) continue;
-                        const data = line.slice(6);
-
-                        if (data === '[DONE]') break;
-
-                        // First event carries session_id JSON
-                        if (data.startsWith('{')) {
-                            try {
-                                const json = JSON.parse(data);
-                                if (json.session_id) {
-                                    sessionId = json.session_id;
-                                }
-                            } catch {}
-                            continue;
-                        }
-
-                        if (firstToken) {
-                            replyEl.classList.remove('thinking');
-                            replyEl.textContent = '';
-                            textSpan = document.createElement('span');
-                            replyEl.appendChild(textSpan);
-                            twStart(textSpan, replyEl);
-                            firstToken = false;
-                        }
-
-                        twEnqueue(data.replace(/\\n/g, '\n'));
-                    }
-                }
-            } catch (err) {
-                twStop();
-                replyEl.classList.remove('thinking');
-                replyEl.textContent = '[connection error — is the Identity server running?]';
-                replyEl.style.opacity = '0.4';
-                console.error(err);
-            } finally {
-                streaming = false;
-                askInput.disabled = false;
-                askInput.focus();
-            }
+            await streamWithRetry(userText, replyEl, '[connection error — is the Identity server running?]');
+            streaming = false;
+            askInput.disabled = false;
+            askInput.focus();
         }
 
         async function streamMeta(message) {
@@ -940,53 +938,9 @@
             replyEl.textContent = '...';
             convoEl.appendChild(replyEl);
             scrollToBottom(true);
-            let textSpan = null;
-
-            try {
-                const res = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message, session_id: sessionId, referrer: pageReferrer }),
-                });
-                if (!res.ok) throw new Error(`Server error ${res.status}`);
-                const reader = res.body.getReader();
-                const decoder = new TextDecoder();
-                let buffer = '';
-                let firstToken = true;
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    buffer += decoder.decode(value, { stream: true });
-                    const lines = buffer.split('\n');
-                    buffer = lines.pop();
-                    for (const line of lines) {
-                        if (!line.startsWith('data: ')) continue;
-                        const data = line.slice(6);
-                        if (data === '[DONE]') break;
-                        if (data.startsWith('{')) {
-                            try { const j = JSON.parse(data); if (j.session_id) sessionId = j.session_id; } catch {}
-                            continue;
-                        }
-                        if (firstToken) {
-                            replyEl.classList.remove('thinking');
-                            replyEl.textContent = '';
-                            textSpan = document.createElement('span');
-                            replyEl.appendChild(textSpan);
-                            twStart(textSpan, replyEl);
-                            firstToken = false;
-                        }
-                        twEnqueue(data.replace(/\\n/g, '\n'));
-                    }
-                }
-            } catch (err) {
-                twStop();
-                replyEl.classList.remove('thinking');
-                replyEl.textContent = '[connection error]';
-                replyEl.style.opacity = '0.4';
-            } finally {
-                streaming = false;
-                askInput.disabled = false;
-            }
+            await streamWithRetry(message, replyEl, '[connection error]');
+            streaming = false;
+            askInput.disabled = false;
         }
 
         let greetingShown = false;
