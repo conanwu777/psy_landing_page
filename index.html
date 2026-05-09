@@ -925,23 +925,12 @@
             replyEl.textContent = '...';
             convoEl.appendChild(replyEl);
             scrollToBottom(true);
-            await streamWithRetry(userText, replyEl, '[connection error — is the Identity server running?]');
+            await streamWithRetry(userText, replyEl, 'The line went quiet — our server may be temporarily away. Try again in a moment.');
             streaming = false;
             askInput.disabled = false;
             askInput.focus();
         }
 
-        async function streamMeta(message) {
-            streaming = true;
-            const replyEl = document.createElement('p');
-            replyEl.classList.add('thinking');
-            replyEl.textContent = '...';
-            convoEl.appendChild(replyEl);
-            scrollToBottom(true);
-            await streamWithRetry(message, replyEl, '[connection error]');
-            streaming = false;
-            askInput.disabled = false;
-        }
 
         let greetingShown = false;
 
@@ -952,7 +941,7 @@
             greetingShown = true;
             waitingForName = true;
             expandUI();
-            streamMeta('[meta] A visitor just arrived. Welcome them in one line. Then ask how you should call them — frame it gently, e.g. "how shall I call you?" and let them know they can share their name or just ask anything.');
+            streamResponse('[meta] A visitor just arrived. Welcome them in one line. Then ask how you should call them — frame it gently, e.g. "how shall I call you?" and let them know they can share their name or just ask anything.');
         });
 
         function submitMessage() {
@@ -1052,7 +1041,7 @@
             } else {
                 metaMsg = `[meta] The visitor (${visitorName}) just signed up to the Psy_ waitlist. Warmly acknowledge this — thank them by name, let them know Psy_ will keep them posted, and hint they may be invited to beta test.`;
             }
-            streamMeta(metaMsg);
+            streamResponse(metaMsg);
         }
 
         emailInput.addEventListener('keydown', e => {
