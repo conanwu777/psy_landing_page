@@ -731,6 +731,7 @@
         const convoEl  = document.getElementById('conversation');
         const heroEl   = document.getElementById('hero');
         const panelEl  = document.getElementById('panel');
+        const titleEl  = document.querySelector('.title');
 
         let sessionId = '';
         const pageReferrer = document.referrer || '';
@@ -854,9 +855,9 @@
         function updatePanelTop() {
             if (screen.width < screen.height) {
                 const visualOffset = window.visualViewport ? window.visualViewport.offsetTop : 0;
-                const panelTop = noteEl.getBoundingClientRect().bottom + visualOffset;
-                panelEl.style.top = panelTop + 'px';
-                convoEl.style.top = (panelTop + 16) + 'px';
+                const titleBottom = titleEl.getBoundingClientRect().bottom + visualOffset;
+                panelEl.style.top = titleBottom + 'px';
+                convoEl.style.top = titleBottom + 'px';
             } else {
                 panelEl.style.top = '';
                 convoEl.style.top = '';
