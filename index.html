@@ -306,8 +306,8 @@
             justify-content: flex-start;
             background: rgba(243, 226, 220, 0.3);
             border-radius: 999px;
-            height: 30px;
-            width: 30px;
+            height: var(--pill-h, 30px);
+            width: var(--pill-h, 30px);
             overflow: hidden;
             white-space: nowrap;
             transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
@@ -362,8 +362,8 @@
             transition: opacity 0.2s ease;
             line-height: 0;
             flex-shrink: 0;
-            width: 30px;
-            height: 30px;
+            width: var(--pill-h, 30px);
+            height: var(--pill-h, 30px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -432,9 +432,12 @@
             .conversation p {
                 font-size: var(--font-ui);
             }
+            #emailWidget {
+                left: 16px;
+            }
             body.conv-open #emailWidget {
                 left: auto;
-                right: 1.2rem;
+                right: 16px;
             }
             body.conv-open #emailPill {
                 flex-direction: row-reverse;
@@ -889,7 +892,14 @@
             subtitleEl.style.width = '';
         }
         window.addEventListener('resize', fitSubtitle);
-        document.fonts.ready.then(() => { fitSubtitle(); updatePanelTop(); });
+
+        function syncPillSize() {
+            const h = Math.round(askBar.getBoundingClientRect().height);
+            if (h > 0) document.documentElement.style.setProperty('--pill-h', h + 'px');
+        }
+        window.addEventListener('resize', syncPillSize);
+
+        document.fonts.ready.then(() => { fitSubtitle(); updatePanelTop(); syncPillSize(); });
 
         function expandUI() {
             if (!heroEl.classList.contains('compressed')) {
