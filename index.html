@@ -366,9 +366,8 @@
 
         #emailIcon {
             cursor: pointer;
-            color: var(--text-muted);
-            opacity: 0.85;
-            transition: opacity 0.2s ease;
+            color: var(--icon);
+            transition: color 0.2s ease;
             line-height: 0;
             flex-shrink: 0;
             width: var(--pill-h, 30px);
@@ -380,7 +379,7 @@
             border: none;
             padding: 0;
         }
-        #emailIcon:hover { opacity: 1; }
+        #emailIcon:hover { color: var(--text-muted); }
 
         @media (max-aspect-ratio: 1/1) {
             #panel {
