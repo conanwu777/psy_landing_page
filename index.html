@@ -113,6 +113,13 @@
             font-weight: 400;
             max-width: 75ch;
         }
+        .note span {
+            display: inline;
+            background: rgba(243, 226, 220, 0.3);
+            -webkit-box-decoration-break: clone;
+            box-decoration-break: clone;
+            padding: 3px 6px;
+        }
 
         #panel {
             position: fixed;
@@ -155,7 +162,7 @@
 
         .conversation p {
             font-family: 'Courier Prime', monospace;
-            font-size: 15px;
+            font-size: 12px;
             color: var(--text-muted);
             line-height: 1.6;
             margin-top: 1.2rem;
@@ -224,7 +231,7 @@
             border: none;
             outline: none;
             font-family: 'Courier Prime', monospace;
-            font-size: 15px;
+            font-size: 12px;
             font-weight: 700;
             color: var(--text-muted);
             caret-color: transparent;
@@ -259,7 +266,7 @@
             transform: translateY(-50%);
             color: var(--icon);
             font-family: 'Courier Prime', monospace;
-            font-size: 15px;
+            font-size: 12px;
             font-weight: 700;
             pointer-events: none;
             user-select: none;
@@ -373,6 +380,9 @@
             .hero.compressed .hero-spacer {
                 height: 2vh;
             }
+            .hero.compressed .note {
+                display: none;
+            }
             .hero.compressed .subtitle {
                 margin-top: 6px;
             }
@@ -397,7 +407,7 @@
                 box-sizing: border-box;
             }
             .ask-bar input, #fakePlaceholder {
-                font-size: 13px;
+                font-size: 12px;
             }
             .conversation {
                 top: 160px;
@@ -407,7 +417,7 @@
                 box-sizing: border-box;
             }
             .conversation p {
-                font-size: 13px;
+                font-size: 12px;
             }
         }
     </style>
@@ -455,7 +465,7 @@
             <div class="hero-bottom">
                 <div>
                     <p class="subtitle">internal search engine for human coherence</p>
-                    <p class="note">Psy_ is currently in private prototype phase<br>This is not Psy_ itself but a small portal to explain the project<br>For those who care — and have a bit of patience<br>Beta access coming soon, sign up for updates</p>
+                    <p class="note"><span>Psy_ is currently in private prototype phase<br>This is not Psy_ itself but a small portal to explain the project<br>For those who care — and have a bit of patience<br>Beta access coming soon, sign up for updates</span></p>
                 </div>
             </div>
         </main>
@@ -844,15 +854,18 @@
                 return;
             }
             subtitleEl.style.fontSize = '';
-            const gap = 32; // 2rem margin between subtitle and ask-bar
+            const gap = 32;
             const barLeft = window.innerWidth * (2 / 3) - 1.2 * 16;
-            const available = barLeft - subtitleEl.getBoundingClientRect().left - gap;
+            const subtitleLeft = subtitleEl.getBoundingClientRect().left;
+            const available = barLeft - subtitleLeft - gap;
             let size = parseFloat(window.getComputedStyle(subtitleEl).fontSize);
+            subtitleEl.style.width = 'max-content';
             subtitleEl.style.fontSize = size + 'px';
-            while (subtitleEl.scrollWidth > available && size > 12) {
+            while (subtitleEl.scrollWidth > available && size > 15) {
                 size -= 0.5;
                 subtitleEl.style.fontSize = size + 'px';
             }
+            subtitleEl.style.width = '';
         }
         window.addEventListener('resize', fitSubtitle);
         document.fonts.ready.then(() => { fitSubtitle(); updatePanelTop(); });
