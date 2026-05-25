@@ -133,7 +133,7 @@
             left: calc(100% * 2 / 3 - 1.2rem);
             right: 1.2rem;
             bottom: 1.8rem;
-            z-index: 14;
+            z-index: 9;
             pointer-events: none;
             border-radius: 16px;
             background: linear-gradient(to bottom, transparent 0%, rgba(243, 226, 220, 0.5) 55%);
@@ -397,7 +397,7 @@
                 display: none;
             }
             .hero.compressed .subtitle {
-                margin-top: 6px;
+                display: none;
             }
             .hero-top {
                 flex: 0 0 auto;
@@ -432,6 +432,13 @@
             .conversation p {
                 font-size: var(--font-ui);
             }
+            body.conv-open #emailWidget {
+                left: auto;
+                right: 1.2rem;
+            }
+            body.conv-open #emailPill {
+                flex-direction: row-reverse;
+            }
         }
     </style>
 </head>
@@ -453,7 +460,6 @@
     </div>
 </div>
 
-<div id="panel"></div>
 <div class="conversation" id="conversation"><div class="conversation-spacer"></div></div>
 
     <div class="ask-bar">
@@ -469,6 +475,7 @@
     <div class="container">
         <canvas id="foliationCanvas"></canvas>
         <div class="grain-overlay"></div>
+        <div id="panel"></div>
 
         <main class="hero" id="hero">
             <div class="hero-spacer"></div>
@@ -886,6 +893,7 @@
         function expandUI() {
             if (!heroEl.classList.contains('compressed')) {
                 heroEl.classList.add('compressed');
+                document.body.classList.add('conv-open');
                 convoEl.style.display = 'flex';
                 const start = performance.now();
                 const duration = 720;
