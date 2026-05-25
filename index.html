@@ -23,6 +23,15 @@
             --font-note:     11px;
             --font-ui:       13px;
             --font-enter:    1.4rem;
+
+            --edge:   1.2rem;   /* horizontal distance from screen edges */
+            --bottom: 1.8rem;   /* clearance from screen bottom */
+        }
+        @media (max-aspect-ratio: 1/1) {
+            :root {
+                --edge:   16px;
+                --bottom: 16px;
+            }
         }
 
         * {
@@ -130,9 +139,9 @@
         #panel {
             position: fixed;
             top: 0;
-            left: calc(100% * 2 / 3 - 1.2rem);
-            right: 1.2rem;
-            bottom: 1.8rem;
+            left: calc(100% * 2 / 3 - var(--edge));
+            right: var(--edge);
+            bottom: var(--bottom);
             z-index: 9;
             pointer-events: none;
             border-radius: 16px;
@@ -148,8 +157,8 @@
         .conversation {
             position: fixed;
             top: 1.5rem;
-            left: calc(100% * 2 / 3 - 1.2rem);
-            right: 1.2rem;
+            left: calc(100% * 2 / 3 - var(--edge));
+            right: var(--edge);
             bottom: 5.5rem;
             z-index: 15;
             overflow-y: auto;
@@ -202,9 +211,9 @@
 
         .ask-bar {
             position: fixed;
-            bottom: 1.8rem;
-            left: calc(100% * 2 / 3 - 1.2rem);
-            right: 1.2rem;
+            bottom: var(--bottom);
+            left: calc(100% * 2 / 3 - var(--edge));
+            right: var(--edge);
             z-index: 20;
             display: flex;
             align-items: center;
@@ -296,7 +305,7 @@
         #emailWidget {
             position: fixed;
             top: 1.1rem;
-            left: 1.2rem;
+            left: var(--edge);
             z-index: 30;
         }
 
@@ -375,9 +384,9 @@
 
         @media (max-aspect-ratio: 1/1) {
             #panel {
-                left: 16px;
-                right: 16px;
-                bottom: 16px;
+                left: var(--edge);
+                right: var(--edge);
+                bottom: var(--bottom);
                 border-radius: 20px;
             }
 
@@ -414,9 +423,9 @@
                 max-width: 90vw;
             }
             .ask-bar {
-                left: 16px;
-                right: 16px;
-                bottom: 16px;
+                left: var(--edge);
+                right: var(--edge);
+                bottom: var(--bottom);
                 box-sizing: border-box;
             }
             .ask-bar input, #fakePlaceholder {
@@ -424,8 +433,8 @@
             }
             .conversation {
                 top: 160px;
-                left: 16px;
-                right: 16px;
+                left: var(--edge);
+                right: var(--edge);
                 bottom: 63px;
                 box-sizing: border-box;
             }
@@ -433,11 +442,11 @@
                 font-size: var(--font-ui);
             }
             #emailWidget {
-                left: 16px;
+                left: var(--edge);
             }
             body.conv-open #emailWidget {
                 left: auto;
-                right: 16px;
+                right: var(--edge);
             }
             body.conv-open #emailPill {
                 flex-direction: row-reverse;
