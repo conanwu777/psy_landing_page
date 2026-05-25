@@ -17,6 +17,12 @@
             --surface:     rgba(243, 226, 220, 0.55);
             --text-muted:  rgba(64, 56, 51, 0.65);
             --icon:        rgba(43, 38, 35, 0.35);
+
+            --font-title:    clamp(60px, 10vw, 140px);
+            --font-subtitle: clamp(20px, 2.6vw, 32px);
+            --font-note:     11px;
+            --font-ui:       13px;
+            --font-enter:    1.4rem;
         }
 
         * {
@@ -84,7 +90,7 @@
         }
 
         .title {
-            font-size: clamp(60px, 10vw, 140px);
+            font-size: var(--font-title);
             font-weight: 700;
             letter-spacing: -0.05em;
             line-height: 0.9;
@@ -97,7 +103,7 @@
         }
 
         .subtitle {
-            font-size: clamp(20px, 2.6vw, 32px);
+            font-size: var(--font-subtitle);
             white-space: nowrap;
             margin-top: 1.8rem;
             color: var(--text-color);
@@ -106,7 +112,7 @@
         }
 
         .note {
-            font-size: 11px;
+            font-size: var(--font-note);
             color: var(--text-muted);
             line-height: 19px;
             margin-top: 1.4rem;
@@ -162,7 +168,7 @@
 
         .conversation p {
             font-family: 'Courier Prime', monospace;
-            font-size: 13px;
+            font-size: var(--font-ui);
             color: var(--text-muted);
             line-height: 1.6;
             margin-top: 1.2rem;
@@ -231,7 +237,7 @@
             border: none;
             outline: none;
             font-family: 'Courier Prime', monospace;
-            font-size: 13px;
+            font-size: var(--font-ui);
             font-weight: 700;
             color: var(--text-muted);
             caret-color: transparent;
@@ -251,7 +257,7 @@
             top: 50%;
             transform: translateY(-50%);
             font-family: 'Courier Prime', monospace;
-            font-size: 15px;
+            font-size: var(--font-ui);
             font-weight: 900;
             color: var(--text-muted);
             animation: blink 1s steps(2) infinite;
@@ -266,7 +272,7 @@
             transform: translateY(-50%);
             color: var(--icon);
             font-family: 'Courier Prime', monospace;
-            font-size: 13px;
+            font-size: var(--font-ui);
             font-weight: 700;
             pointer-events: none;
             user-select: none;
@@ -282,7 +288,7 @@
             align-items: center;
             justify-content: center;
             color: var(--icon);
-            font-size: 1.4rem;
+            font-size: var(--font-enter);
             cursor: pointer;
         }
 
@@ -290,41 +296,44 @@
         #emailWidget {
             position: fixed;
             top: 1.1rem;
-            right: 1.2rem;
+            left: 1.2rem;
             z-index: 30;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        #emailSlide {
-            display: flex;
-            align-items: center;
-            max-width: 0;
-            overflow: hidden;
-            opacity: 0;
-            transition: max-width 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
-        }
-        #emailSlide.open {
-            max-width: 320px;
-            opacity: 1;
         }
 
         #emailPill {
             display: flex;
             align-items: center;
-            background: var(--surface);
+            justify-content: flex-start;
+            background: rgba(243, 226, 220, 0.3);
             border-radius: 999px;
-            padding: 5px 16px 5px 18px;
-            gap: 0.5rem;
+            height: 30px;
+            width: 30px;
+            overflow: hidden;
             white-space: nowrap;
+            transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+        }
+        #emailPill.open {
+            width: 264px;
+        }
+
+        #emailSlide {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0 8px 0 14px;
+            flex-shrink: 0;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        #emailPill.open #emailSlide {
+            opacity: 1;
         }
 
         #emailInput {
             background: none;
             border: none;
             font-family: 'Courier Prime', monospace;
-            font-size: 15px;
+            font-size: var(--font-ui);
             font-weight: 700;
             color: var(--text-muted);
             outline: none;
@@ -341,7 +350,7 @@
 
         #emailEnter {
             color: var(--icon);
-            font-size: 1.4rem;
+            font-size: var(--font-enter);
             line-height: 1;
             flex-shrink: 0;
         }
@@ -353,10 +362,14 @@
             transition: opacity 0.2s ease;
             line-height: 0;
             flex-shrink: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             background: none;
             border: none;
             padding: 0;
-            margin-right: 16px;
         }
         #emailIcon:hover { opacity: 1; }
 
@@ -407,7 +420,7 @@
                 box-sizing: border-box;
             }
             .ask-bar input, #fakePlaceholder {
-                font-size: 13px;
+                font-size: var(--font-ui);
             }
             .conversation {
                 top: 160px;
@@ -417,7 +430,7 @@
                 box-sizing: border-box;
             }
             .conversation p {
-                font-size: 13px;
+                font-size: var(--font-ui);
             }
         }
     </style>
@@ -426,18 +439,18 @@
 
 <!-- Email bar -->
 <div id="emailWidget">
-    <div id="emailSlide">
-        <div id="emailPill">
+    <div id="emailPill">
+        <button id="emailIcon" aria-label="Stay in touch">
+            <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="1" y="1" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                <polyline points="1,1 10,9 19,1" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+            </svg>
+        </button>
+        <div id="emailSlide">
             <input type="email" id="emailInput" placeholder="your@email.com" autocomplete="email" />
             <span id="emailEnter">↵</span>
         </div>
     </div>
-    <button id="emailIcon" aria-label="Stay in touch">
-        <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="1" y="1" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/>
-            <polyline points="1,1 10,9 19,1" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-        </svg>
-    </button>
 </div>
 
 <div id="panel"></div>
@@ -1010,23 +1023,21 @@
 
         // ── Email bar ────────────────────────────────────────────
         const emailIcon  = document.getElementById('emailIcon');
-        const emailSlide = document.getElementById('emailSlide');
+        const emailPill  = document.getElementById('emailPill');
         const emailInput = document.getElementById('emailInput');
 
         function openEmail() {
-            emailSlide.classList.add('open');
-            emailIcon.style.display = 'none';
+            emailPill.classList.add('open');
             setTimeout(() => emailInput.focus(), 320);
         }
 
         function closeEmail() {
-            emailSlide.classList.remove('open');
-            emailIcon.style.display = '';
+            emailPill.classList.remove('open');
             emailInput.value = '';
         }
 
         emailIcon.addEventListener('click', () => {
-            emailSlide.classList.contains('open') ? closeEmail() : openEmail();
+            emailPill.classList.contains('open') ? closeEmail() : openEmail();
         });
 
         document.addEventListener('click', e => {
